@@ -1,0 +1,120 @@
+---
+title: "Interfaces"
+description: "An interface defines an abstract contract type with a declared `viewtype`, method signatures, and choices. Any template can implement an interface by providing an `interface instance`. Code written against an interface works with any implementing template, enabling polymorphism across unrelated contract types."
+---
+
+```daml
+-- Interfaces.daml
+module Interfaces where
+
+import Daml.Script
+
+
+-- ── 1. Define the interface ──────────────────────────────
+-- The viewtype is a record that must be implemented by every instance.
+-- It is what callers see when they fetch the interface.
+data AssetView = AssetView
+  with
+    issuer : Party
+    owner  : Party
+    amount : Decimal
+  deriving (Eq, Show)
+
+interface IAsset where
+  viewtype AssetView
+
+  -- Method signatures (no implementations here).
+  getOwner  : Party
+  getAmount : Decimal
+
+  -- Interface choice — controller uses method, not a field.
+  choice ITransfer : ContractId IAsset
+    with newOwner : Party
+    controller getOwner this
+    do
+      setOwner this newOwner
+
+  -- Method that subclasses must implement.
+  setOwner : ContractId IAsset -> Party -> Update (ContractId IAsset)
+
+
+-- ── 2. Implement the interface in a template ─────────────
+template Cash
+  with
+    issuer : Party
+    owner  : Party
+    amount : Decimal
+  where
+    signatory issuer
+    observer  owner
+    ensure amount > 0.0
+
+    -- `interface instance IAsset for Cash` links the template to the interface.
+    interface instance IAsset for Cash where
+      view = AssetView with issuer; owner; amount
+
+      getOwner  = owner
+      getAmount = amount
+
+      setOwner _self newOwner =
+        toInterfaceContractId <$> create this with owner = newOwner
+
+
+-- A second template implementing the same interface.
+template Bond
+  with
+    issuer    : Party
+    owner     : Party
+    faceValue : Decimal
+  where
+    signatory issuer
+    observer  owner
+    ensure faceValue > 0.0
+
+    interface instance IAsset for Bond where
+      view = AssetView with issuer; owner; amount = faceValue
+
+      getOwner  = owner
+      getAmount = faceValue
+
+      setOwner _self newOwner =
+        toInterfaceContractId <$> create this with owner = newOwner
+
+
+-- ── 3. Write code against the interface ──────────────────
+-- This function works on any IAsset, regardless of template type.
+transferAsset : ContractId IAsset -> Party -> Update (ContractId IAsset)
+transferAsset assetId newOwner = do
+  exercise assetId ITransfer with newOwner
+
+
+-- ── Test ─────────────────────────────────────────────────
+interfaceTest : Script ()
+interfaceTest = do
+  bank  <- allocateParty "Bank"
+  alice <- allocateParty "Alice"
+  bob   <- allocateParty "Bob"
+
+  -- Create a Cash contract and view it as IAsset
+  cashId <- submit bank do
+    createCmd Cash with issuer = bank; owner = alice; amount = 100.0
+
+  let iAssetId = toInterfaceContractId @IAsset cashId
+
+  -- Transfer using the interface choice
+  newId <- submit alice do
+    exerciseCmd iAssetId ITransfer with newOwner = bob
+
+  -- Fetch via interface to get the view
+  Some iAsset <- queryInterfaceContractId @IAsset alice newId
+  assert (iAsset.owner == bob)
+```
+
+## Key points
+
+- Every interface must declare a `viewtype` — a record type returned when the interface is fetched.
+- The `interface instance T for Template` block must implement every method and the `view` function.
+- `toInterfaceContractId @I cid` upcasts a `ContractId Template` to a `ContractId I`.
+- `fromInterfaceContractId @T icid` attempts a downcast to a specific template; it returns `Optional (ContractId T)`.
+- Interface choices are defined on the interface and dispatch to the template's `interface instance` implementation at runtime.
+- Interfaces require DAML-LF 1.15 or higher (the default in SDK 2.x).

@@ -1,0 +1,85 @@
+---
+title: "Functions and Let"
+description: "DAML functions are pure — they take inputs and return outputs with no side effects. `let`/`in` binds local names within an expression. Guards (`|`) replace nested `if/else` chains. Lambdas use backslash syntax. The standard list combinators `map`, `filter`, and `foldl` replace loops."
+---
+
+```daml
+-- FunctionsAndLet.daml
+module FunctionsAndLet where
+
+-- ── Basic function ──────────────────────────────────────
+add : Int -> Int -> Int
+add x y = x + y
+
+-- Partial application: fix one argument.
+addFive : Int -> Int
+addFive = add 5
+
+result : Int
+result = addFive 3   -- 8
+
+
+-- ── let / in ────────────────────────────────────────────
+-- let binds local names; `in` introduces the body expression.
+circleArea : Decimal -> Decimal
+circleArea r =
+  let
+    pi = 3.14159265358979
+    rSquared = r * r
+  in
+    pi * rSquared
+
+
+-- ── Guards ──────────────────────────────────────────────
+-- Guards are conditions checked top to bottom.
+-- `otherwise` is an alias for True and always matches.
+classify : Int -> Text
+classify n
+  | n < 0     = "negative"
+  | n == 0    = "zero"
+  | n < 100   = "small positive"
+  | otherwise = "large positive"
+
+
+-- ── Pattern matching ────────────────────────────────────
+data Shape = Circle Decimal | Rectangle Decimal Decimal
+  deriving (Show)
+
+area : Shape -> Decimal
+area (Circle r)        = 3.14159265358979 * r * r
+area (Rectangle w h)   = w * h
+
+
+-- ── Lambdas ─────────────────────────────────────────────
+-- Backslash introduces a lambda. Arrow separates params from body.
+double : [Int] -> [Int]
+double xs = map (\x -> x * 2) xs
+
+-- Equivalent using a named helper:
+doubleItem : Int -> Int
+doubleItem x = x * 2
+
+double2 : [Int] -> [Int]
+double2 xs = map doubleItem xs
+
+
+-- ── Standard list combinators ────────────────────────────
+evens : [Int] -> [Int]
+evens xs = filter (\x -> x % 2 == 0) xs
+
+total : [Decimal] -> Decimal
+total xs = foldl (+) 0.0 xs
+
+-- map applies a function to every element
+-- filter keeps elements satisfying a predicate
+-- foldl reduces a list to a single value (left-associative)
+```
+
+## Key points
+
+- Functions are curried: `add : Int -> Int -> Int` is a function that returns a function. `add 5` is valid and returns an `Int -> Int`.
+- `let` bindings inside a `do` block do not use `in` — only top-level `let/in` needs it.
+- Guards are evaluated top-to-bottom; the first matching guard wins.
+- There are no `for`, `while`, or `do/while` loops. Iteration uses `map`, `filter`, `foldl`, or recursion.
+- Lambdas are first-class values and can be passed to and returned from functions.
+- `show : a -> Text` converts any value with a `Show` instance to its string representation.

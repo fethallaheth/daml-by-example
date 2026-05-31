@@ -1,0 +1,88 @@
+---
+title: "Contract Keys"
+description: "A contract key assigns a stable, business-meaningful identifier to a contract. Unlike a `ContractId`, which changes every time a contract is archived and recreated, a key is derived from the contract's data and remains constant for the lifecycle of that logical entity. Keys enable lookups without knowing the `ContractId`."
+---
+
+```daml
+-- ContractKeys.daml
+module ContractKeys where
+
+import Daml.Script
+
+
+template Account
+  with
+    bank      : Party
+    owner     : Party
+    accountId : Text
+    balance   : Decimal
+  where
+    signatory bank
+    observer  owner
+    ensure balance >= 0.0
+
+    -- The key uniquely identifies this contract.
+    -- No two active Account contracts may share the same key.
+    -- The key type is declared after the colon.
+    key (bank, accountId) : (Party, Text)
+
+    -- The maintainer is responsible for key uniqueness.
+    -- It must be a subset of the signatories.
+    -- key._1 accesses the first element of the tuple (bank).
+    maintainer key._1
+
+    choice Deposit : ContractId Account
+      with amount : Decimal
+      controller owner
+      do
+        assertMsg "amount must be positive" (amount > 0.0)
+        create this with balance = balance + amount
+
+    choice Withdraw : ContractId Account
+      with amount : Decimal
+      controller owner
+      do
+        assertMsg "amount must be positive"   (amount > 0.0)
+        assertMsg "insufficient balance"       (amount <= balance)
+        create this with balance = balance - amount
+
+
+-- ── Key lookup in a Script ───────────────────────────────
+keyDemo : Script ()
+keyDemo = do
+  bank  <- allocateParty "Bank"
+  alice <- allocateParty "Alice"
+
+  -- Create an account
+  _cid <- submit bank do
+    createCmd Account with
+      bank      = bank
+      owner     = alice
+      accountId = "ACC-001"
+      balance   = 0.0
+
+  -- Deposit via ContractId (normal exercise)
+  cid2 <- submit alice do
+    exerciseCmd _cid Deposit with amount = 500.0
+
+  -- Fetch by key — no ContractId needed
+  (cid3, account) <- submit bank do
+    fetchByKeyCmd @Account (bank, "ACC-001")
+
+  assert (account.balance == 500.0)
+
+  -- lookupByKey returns Optional — safe if key may not exist
+  mCid <- submit bank do
+    lookupByKeyCmd @Account (bank, "NONEXISTENT")
+
+  assert (mCid == None)
+```
+
+## Key points
+
+- The `key` expression can be any expression involving the template's fields, as long as the resulting type includes at least one `maintainer` party.
+- The `maintainer` must be a signatory (or a subset of the signatories) of the template.
+- `fetchByKey @Template key` returns `(ContractId T, T)` and fails if the key does not exist.
+- `lookupByKey @Template key` returns `Optional (ContractId T)` and does not fail if the key is absent.
+- `exerciseByKey @Template key ChoiceName with ...` combines lookup and exercise in one step.
+- Contract key uniqueness is enforced by the ledger — attempting to create a second active contract with the same key is rejected.

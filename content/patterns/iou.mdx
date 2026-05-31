@@ -1,0 +1,98 @@
+---
+title: "IOU"
+description: "An IOU (I Owe You) is the canonical DAML contract representing a debt acknowledgement between two parties. It demonstrates transfer, split, merge, and settlement — the fundamental lifecycle operations for a fungible obligation."
+---
+
+```daml
+-- IOU.daml
+module IOU where
+
+import Daml.Script
+
+data Cash = Cash
+  with
+    currency : Text
+    amount   : Decimal
+  deriving (Eq, Show)
+
+template IOU
+  with
+    issuer : Party   -- the party that owes
+    owner  : Party   -- the party that is owed
+    cash   : Cash
+  where
+    signatory issuer
+    observer  owner
+    ensure cash.amount > 0.0
+
+    -- Owner transfers the IOU to a third party.
+    choice Transfer : ContractId IOU
+      with newOwner : Party
+      controller owner
+      do create this with owner = newOwner
+
+    -- Owner splits into two IOUs. Total is preserved.
+    choice Split : (ContractId IOU, ContractId IOU)
+      with splitAmount : Decimal
+      controller owner
+      do
+        assertMsg "split amount must be positive"       (splitAmount > 0.0)
+        assertMsg "split amount must be less than total" (splitAmount < cash.amount)
+        let remainder = cash.amount - splitAmount
+        part1 <- create this with cash = cash with amount = splitAmount
+        part2 <- create this with cash = cash with amount = remainder
+        return (part1, part2)
+
+    -- Owner merges another IOU of the same issuer and currency.
+    choice Merge : ContractId IOU
+      with otherId : ContractId IOU
+      controller owner
+      do
+        other <- fetch otherId
+        assertMsg "must have same issuer"   (other.issuer   == issuer)
+        assertMsg "must have same owner"    (other.owner    == owner)
+        assertMsg "must have same currency" (other.cash.currency == cash.currency)
+        archive otherId
+        create this with cash = cash with amount = cash.amount + other.cash.amount
+
+    -- Issuer settles (cancels) the obligation.
+    choice Settle : ()
+      controller issuer
+      do return ()
+
+
+-- ── Test ─────────────────────────────────────────────────
+iouTest : Script ()
+iouTest = do
+  dora  <- allocateParty "Dora"
+  alice <- allocateParty "Alice"
+  bob   <- allocateParty "Bob"
+
+  iou1 <- submit dora do
+    createCmd IOU with
+      issuer = dora
+      owner  = alice
+      cash   = Cash with currency = "USD"; amount = 100.0
+
+  -- Alice splits off $30
+  (iou30, iou70) <- submit alice do
+    exerciseCmd iou1 Split with splitAmount = 30.0
+
+  -- Alice transfers $70 to Bob
+  iouBob <- submit alice do
+    exerciseCmd iou70 Transfer with newOwner = bob
+
+  -- Verify
+  Some i <- queryContractId bob iouBob
+  assert (i.cash.amount == 70.0)
+  assert (i.owner == bob)
+```
+
+## Key points
+
+- `fetch otherId` reads another contract's data inside a choice body without archiving it.
+- `archive cid` explicitly archives a contract inside a choice. It is a consuming action — after this call, `cid` is stale.
+- Nested record update: `cash with amount = x` updates the `amount` field of the `cash` record.
+- `Split` returns a tuple of two `ContractId`s. Tuples are unpacked with pattern matching: `(part1, part2) <- ...`.
+- The UTXO model guarantees totals: Split preserves `splitAmount + remainder == original`. This is enforced by `assert`, not by the runtime automatically.
+- `Settle` (consuming, returns `()`) is the canonical pattern for removing a completed obligation from the ledger.

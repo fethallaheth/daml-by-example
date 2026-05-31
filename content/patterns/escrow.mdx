@@ -1,0 +1,116 @@
+---
+title: "Escrow"
+description: "An escrow holds assets or obligations under the control of a neutral agent until conditions are met. In DAML, the agent is a signatory whose choices determine the outcome: release (funds to seller) or cancel (funds returned to buyer)."
+---
+
+```daml
+-- Escrow.daml
+module Escrow where
+
+import Daml.Script
+
+
+template Escrow
+  with
+    buyer  : Party
+    seller : Party
+    agent  : Party   -- neutral third party
+    asset  : Text
+    amount : Decimal
+  where
+    -- All three must authorize creation.
+    signatory buyer, seller, agent
+    ensure amount > 0.0
+
+    -- Agent is satisfied: seller gets the funds.
+    choice Release : ContractId Receipt
+      controller agent
+      do
+        create Receipt with
+          from    = buyer
+          to      = seller
+          asset; amount
+          settled = True
+
+    -- Agent is not satisfied: buyer is refunded.
+    choice Cancel : ContractId Receipt
+      controller agent
+      do
+        create Receipt with
+          from    = buyer
+          to      = buyer   -- refund
+          asset; amount
+          settled = False
+
+    -- Buyer raises a dispute for the agent to investigate.
+    -- nonconsuming: the escrow stays active during dispute resolution.
+    nonconsuming choice RaiseDispute : ContractId Dispute
+      with reason : Text
+      controller buyer
+      do
+        create Dispute with
+          escrowParties = EscrowParties with buyer; seller; agent
+          asset; reason
+
+
+-- ── Supporting types ─────────────────────────────────────
+data EscrowParties = EscrowParties
+  with
+    buyer  : Party
+    seller : Party
+    agent  : Party
+  deriving (Eq, Show)
+
+template Receipt
+  with
+    from    : Party
+    to      : Party
+    asset   : Text
+    amount  : Decimal
+    settled : Bool
+  where
+    signatory from, to
+
+template Dispute
+  with
+    escrowParties : EscrowParties
+    asset         : Text
+    reason        : Text
+  where
+    signatory escrowParties.buyer
+    observer  escrowParties.agent, escrowParties.seller
+
+
+-- ── Test ─────────────────────────────────────────────────
+escrowTest : Script ()
+escrowTest = do
+  alice <- allocateParty "Alice"  -- buyer
+  bob   <- allocateParty "Bob"    -- seller
+  carol <- allocateParty "Carol"  -- agent
+
+  -- All three must submit jointly (or use Propose/Accept chain in practice)
+  escrowId <- submitMultiParty [alice, bob, carol] do
+    createCmd Escrow with
+      buyer  = alice
+      seller = bob
+      agent  = carol
+      asset  = "Widget"
+      amount = 500.0
+
+  -- Carol releases after verifying delivery
+  receiptId <- submit carol do
+    exerciseCmd escrowId Release
+
+  Some receipt <- queryContractId alice receiptId
+  assert (receipt.settled == True)
+  assert (receipt.to == bob)
+```
+
+## Key points
+
+- `submitMultiParty [party1, party2, ...] do` submits a transaction authorized by all listed parties simultaneously. This is only available in Script (for testing); in production, multi-signatory creation uses the Propose/Accept pattern.
+- A three-party contract means no single party can unilaterally archive it — a useful property for neutral custody.
+- `nonconsuming` on `RaiseDispute` allows the buyer to file a dispute without destroying the escrow.
+- Embedding a named record (`EscrowParties`) rather than repeating party fields keeps templates clean when many parties share a logical role.
+- `Receipt` has `from` and `to` as signatories, so it is a bilateral acknowledgement of the outcome.
+- In production systems, the escrow's asset is represented as a `ContractId` to an actual asset contract, not just a `Text` label.

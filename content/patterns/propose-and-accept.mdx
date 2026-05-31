@@ -1,0 +1,91 @@
+---
+title: "Propose and Accept"
+description: "When a contract requires multiple signatories, they cannot all sign simultaneously in an asynchronous system. The Propose/Accept pattern solves this by staging authorization: the proposer creates a one-sided proposal, and the accepter exercises a choice that creates the final multi-signatory contract."
+---
+
+```daml
+-- ProposeAndAccept.daml
+module ProposeAndAccept where
+
+import Daml.Script
+
+
+-- ── Step 1: The Proposal ─────────────────────────────────
+-- Only the seller signs. The buyer is an observer (can see it).
+-- The proposal is NOT yet a binding agreement.
+template TradeProposal
+  with
+    seller : Party
+    buyer  : Party
+    asset  : Text
+    price  : Decimal
+  where
+    signatory seller
+    observer  buyer
+    ensure price > 0.0
+
+    -- Buyer accepts → archives proposal, creates binding Trade.
+    choice Accept : ContractId Trade
+      controller buyer
+      do
+        create Trade with seller; buyer; asset; price
+
+    -- Buyer declines → archives proposal, nothing is created.
+    choice Decline : ()
+      controller buyer
+      do return ()
+
+    -- Seller retracts before buyer has responded.
+    choice Retract : ()
+      controller seller
+      do return ()
+
+
+-- ── Step 2: The Trade ────────────────────────────────────
+-- Both parties are now signatories.
+-- Neither can archive it without the other.
+template Trade
+  with
+    seller : Party
+    buyer  : Party
+    asset  : Text
+    price  : Decimal
+  where
+    signatory seller, buyer
+
+
+-- ── Test ─────────────────────────────────────────────────
+proposeAcceptTest : Script ()
+proposeAcceptTest = do
+  alice <- allocateParty "Alice"
+  bob   <- allocateParty "Bob"
+
+  -- Alice proposes a trade
+  proposalId <- submit alice do
+    createCmd TradeProposal with
+      seller = alice
+      buyer  = bob
+      asset  = "AAPL"
+      price  = 150.0
+
+  -- Bob accepts — this creates the Trade
+  tradeId <- submit bob do
+    exerciseCmd proposalId Accept
+
+  Some trade <- queryContractId alice tradeId
+  assert (trade.seller == alice)
+  assert (trade.buyer  == bob)
+
+  -- Verify proposal is archived (consuming choice)
+  proposal <- queryContractId alice proposalId
+  assert (proposal == None)
+```
+
+## Key points
+
+- A multi-signatory contract cannot be created in a single step unless all signatories are already parties to the authorizing transaction. The Propose/Accept pattern stages this.
+- The `TradeProposal` has only `seller` as signatory, so Alice can create it alone. `Accept` is controlled by `buyer`, whose authorization creates the `Trade` with both signatories.
+- `Retract` lets the proposer cancel before the counterparty responds — this is essential for any realistic proposal.
+- `Decline` is separate from `Retract` to distinguish who took the action on the ledger.
+- The pattern extends naturally to three parties: Party A proposes → B accepts (2-sig proposal) → C accepts (3-sig contract).
+- Field punning: `seller; buyer; asset; price` inside `create Trade with` is shorthand for `seller = seller; buyer = buyer; ...`.

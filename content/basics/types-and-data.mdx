@@ -1,0 +1,76 @@
+---
+title: "Types and Data"
+description: "DAML has three kinds of composite types: records (product types), variants (sum types), and enums. All are defined with the `data` keyword. The `deriving` clause automatically generates typeclass instances for equality comparison and string rendering."
+---
+
+```daml
+-- TypesAndData.daml
+module TypesAndData where
+
+-- ── Record type ────────────────────────────────────────
+-- Fields are listed under `with`, one per line.
+data Address = Address
+  with
+    street  : Text
+    city    : Text
+    country : Text
+  deriving (Eq, Show)
+
+-- Constructing a record value:
+myAddress : Address
+myAddress = Address with
+  street  = "10 Downing Street"
+  city    = "London"
+  country = "GB"
+
+-- Field access uses dot notation:
+cityName : Text
+cityName = myAddress.city   -- "London"
+
+-- Record update creates a new value (records are immutable):
+updatedAddress : Address
+updatedAddress = myAddress with city = "Edinburgh"
+
+
+-- ── Variant (sum type) ─────────────────────────────────
+-- Each constructor can carry different data.
+data Status
+  = Active
+  | Suspended Text        -- carries a reason
+  | Closed (Optional Text)
+  deriving (Eq, Show)
+
+-- Pattern matching on a variant:
+describeStatus : Status -> Text
+describeStatus Active           = "active"
+describeStatus (Suspended r)    = "suspended: " <> r
+describeStatus (Closed None)    = "closed"
+describeStatus (Closed (Some n)) = "closed: " <> n
+
+
+-- ── Enum (variant with no payloads) ────────────────────
+data Currency = USD | EUR | GBP | JPY
+  deriving (Eq, Show)
+
+
+-- ── Built-in types ─────────────────────────────────────
+-- Party   : an authenticated ledger identity
+-- Text    : UTF-8 string
+-- Int     : 64-bit signed integer
+-- Decimal : fixed-point number (38 significant digits, 10 decimal places)
+-- Bool    : True / False
+-- Date    : calendar date (no time zone)
+-- Time    : UTC timestamp
+-- Optional a : Some value | None
+-- ContractId T : reference to an active contract of template T
+-- [a]    : homogeneous list
+```
+
+## Key points
+
+- `data` defines both records (one constructor, fields) and variants (multiple constructors).
+- Record update syntax (`with field = newValue`) creates a new value without mutating the original.
+- `Optional a` is DAML's null-safety type: `Some x` or `None`. There is no null.
+- `Decimal` is the correct type for monetary and quantity values — never `Double`.
+- `deriving (Eq, Show)` generates `==`, `/=`, and `show` automatically.
+- All composite types must be passed as template parameters; they cannot be stored as global state.

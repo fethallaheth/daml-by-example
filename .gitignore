@@ -19,7 +19,7 @@
 
 # production
 /build
-
+/.impeccable
 # misc
 .DS_Store
 *.pem

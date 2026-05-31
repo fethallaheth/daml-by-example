@@ -1,0 +1,98 @@
+---
+title: "Token"
+description: "A token is the simplest fungible asset in DAML. Unlike a global ledger mapping, each token is a discrete contract representing a specific quantity owned by a specific party. Fungibility is achieved through split and merge operations that preserve total supply."
+---
+
+```daml
+-- Token.daml
+module Token where
+
+import Daml.Script
+
+
+template Token
+  with
+    issuer   : Party
+    owner    : Party
+    symbol   : Text
+    amount   : Decimal
+  where
+    signatory issuer
+    observer  owner
+    ensure amount > 0.0
+
+    -- Uniquely identify each issued token series by issuer + symbol.
+    key (issuer, symbol, owner) : (Party, Text, Party)
+    maintainer key._1
+
+    -- Transfer to a new owner.
+    choice Transfer : ContractId Token
+      with newOwner : Party
+      controller owner
+      do create this with owner = newOwner
+
+    -- Split into two tokens. Total is conserved.
+    choice Split : (ContractId Token, ContractId Token)
+      with splitAmount : Decimal
+      controller owner
+      do
+        assertMsg "split amount must be positive"        (splitAmount > 0.0)
+        assertMsg "split amount must be less than total"  (splitAmount < amount)
+        t1 <- create this with amount = splitAmount
+        t2 <- create this with amount = amount - splitAmount
+        return (t1, t2)
+
+    -- Merge another token of the same issuer and symbol.
+    choice Merge : ContractId Token
+      with otherId : ContractId Token
+      controller owner
+      do
+        other <- fetch otherId
+        assertMsg "must have same issuer" (other.issuer == issuer)
+        assertMsg "must have same symbol" (other.symbol == symbol)
+        assertMsg "must have same owner"  (other.owner  == owner)
+        archive otherId
+        create this with amount = amount + other.amount
+
+    -- Issuer burns (destroys) the token.
+    choice Burn : ()
+      controller issuer
+      do return ()
+
+
+-- ── Test ─────────────────────────────────────────────────
+tokenTest : Script ()
+tokenTest = do
+  bank  <- allocateParty "Bank"
+  alice <- allocateParty "Alice"
+  bob   <- allocateParty "Bob"
+
+  -- Mint 1000 tokens for Alice
+  tid <- submit bank do
+    createCmd Token with
+      issuer = bank; owner = alice; symbol = "GOLD"; amount = 1000.0
+
+  -- Alice splits off 300
+  (t300, t700) <- submit alice do
+    exerciseCmd tid Split with splitAmount = 300.0
+
+  -- Alice transfers 700 to Bob
+  tBob <- submit alice do
+    exerciseCmd t700 Transfer with newOwner = bob
+
+  -- Alice merges her 300 back with... nothing (just verify state)
+  Some goldAlice <- queryContractId alice t300
+  assert (goldAlice.amount == 300.0)
+
+  Some goldBob <- queryContractId bob tBob
+  assert (goldBob.amount == 700.0)
+```
+
+## Key points
+
+- Each token is an individual contract. Total supply is the sum of all active token contracts with the same `issuer` and `symbol`.
+- There is no global mapping. Querying all tokens of a given type requires `query @Token party` and filtering by `symbol`.
+- `Merge` uses `archive otherId` explicitly to destroy the second token before creating the combined one.
+- `Burn` is a consuming choice controlled by the issuer — it removes the token from circulation without creating a replacement.
+- The `key` here includes `owner` so that each `(issuer, symbol, owner)` triple is unique. If you want one canonical contract per symbol, remove `owner` from the key and use `Merge` to consolidate.
+- Conserving total supply must be enforced by the contract logic (`Split` and `Merge` preserve totals via `assert`). The runtime does not enforce conservation automatically.

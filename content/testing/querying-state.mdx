@@ -1,0 +1,84 @@
+---
+title: "Querying State"
+description: "Daml Script provides several functions to read the active contract set from a party's perspective. These are not ledger transactions — they are read-only queries that return the visible state at the current point in the script."
+---
+
+```daml
+-- QueryingState.daml
+module QueryingState where
+
+import Daml.Script
+import DA.List (sortBy)
+import DA.Ord (comparing)
+
+template Token
+  with
+    issuer : Party
+    owner  : Party
+    symbol : Text
+    amount : Decimal
+  where
+    signatory issuer
+    observer  owner
+    ensure amount > 0.0
+
+    key (issuer, symbol) : (Party, Text)
+    maintainer key._1
+
+
+queryDemo : Script ()
+queryDemo = do
+  bank  <- allocateParty "Bank"
+  alice <- allocateParty "Alice"
+  bob   <- allocateParty "Bob"
+
+  -- Create several tokens
+  tid1 <- submit bank do
+    createCmd Token with issuer = bank; owner = alice; symbol = "USD"; amount = 1000.0
+
+  tid2 <- submit bank do
+    createCmd Token with issuer = bank; owner = alice; symbol = "EUR"; amount = 500.0
+
+  tid3 <- submit bank do
+    createCmd Token with issuer = bank; owner = bob;   symbol = "USD"; amount = 200.0
+
+
+  -- ── queryContractId ─────────────────────────────────
+  -- Returns Optional T. None if archived or not visible to the party.
+  Some t1 <- queryContractId alice tid1
+  assert (t1.symbol == "USD")
+
+  -- A party cannot see contracts they have no stake in:
+  notVisible <- queryContractId bob tid1
+  -- bob is not observer or signatory on tid1, so this returns None
+  -- (Depends on ledger privacy; in the sandbox all parties can query by ID.)
+
+
+  -- ── queryContractKey ────────────────────────────────
+  -- Returns Optional (ContractId T, T). Looks up by key.
+  Some (_, usdToken) <- queryContractKey @Token alice (bank, "USD")
+  assert (usdToken.amount == 1000.0)
+
+  noToken <- queryContractKey @Token alice (bank, "GBP")
+  assert (noToken == None)
+
+
+  -- ── query ────────────────────────────────────────────
+  -- Returns all active contracts of type T visible to the party.
+  -- Result is [(ContractId T, T)].
+  aliceTokens <- query @Token alice
+  assert (length aliceTokens == 2)
+
+  -- Sort by amount descending:
+  let sorted = sortBy (comparing (\(_, t) -> t.amount)) aliceTokens
+  pure ()
+```
+
+## Key points
+
+- `queryContractId party cid : Script (Optional T)` — fetch one contract by its ID from the party's view.
+- `queryContractKey @T party key : Script (Optional (ContractId T, T))` — fetch by key from the party's view.
+- `query @T party : Script [(ContractId T, T)]` — fetch all active contracts of type `T` visible to the party.
+- Query functions are read-only. They do not create transactions and do not appear on the ledger.
+- In a test, `query` is useful for asserting the total number of active contracts of a given type.
+- `@T` is the type application syntax — it tells the compiler which template type you are querying when it cannot be inferred.

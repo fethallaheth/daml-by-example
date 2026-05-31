@@ -1,0 +1,94 @@
+---
+title: "Optional and Lists"
+description: "`Optional a` represents a value that may or may not be present. It is DAML's safe alternative to null. The standard library module `DA.Optional` provides combinators for working with it. Lists are the primary collection type and are worked on with `DA.List`."
+---
+
+```daml
+-- OptionalAndLists.daml
+module OptionalAndLists where
+
+import DA.Optional
+import DA.List
+
+
+-- ── Optional ────────────────────────────────────────────
+
+-- Constructors: Some x  or  None
+maybeAge : Optional Int
+maybeAge = Some 30
+
+noAge : Optional Int
+noAge = None
+
+-- Pattern matching is the safe way to unwrap:
+describeAge : Optional Int -> Text
+describeAge (Some age) = "Age is " <> show age
+describeAge None       = "Age unknown"
+
+-- fromOptional provides a default:
+age : Int
+age = fromOptional 0 maybeAge   -- 30
+
+age2 : Int
+age2 = fromOptional 0 noAge     -- 0
+
+-- optionalToList converts to a zero-or-one-element list:
+asList : [Int]
+asList = optionalToList maybeAge   -- [30]
+
+
+-- ── Lists ────────────────────────────────────────────────
+
+-- List literals use square brackets.
+names : [Text]
+names = ["Alice", "Bob", "Charlie"]
+
+-- Prepend with cons operator `::`
+withDave : [Text]
+withDave = "Dave" :: names
+
+-- Common operations:
+firstItem : Optional Text
+firstItem = listToOptional names   -- Some "Alice"
+
+count : Int
+count = length names   -- 3
+
+reversed : [Text]
+reversed = reverse names
+
+-- zip pairs two lists element-by-element:
+numbers : [Int]
+numbers = [1, 2, 3]
+
+paired : [(Text, Int)]
+paired = zip names numbers
+-- [("Alice",1), ("Bob",2), ("Charlie",3)]
+
+-- Comprehension-style with mapA is available in Update context.
+-- For pure lists, use map + filter:
+shortNames : [Text]
+shortNames = filter (\n -> length n <= 3) names
+
+upperNames : [Text]
+upperNames = map (\n -> n) names   -- identity; replace with DA.Text.toUpper in practice
+
+
+-- ── Working with Optional in Update ─────────────────────
+-- lookupByKey returns Optional (ContractId T).
+-- The safe pattern is:
+--
+--   result <- lookupByKey @MyTemplate myKey
+--   case result of
+--     None    -> ... handle missing ...
+--     Some cid -> exercise cid MyChoice with ...
+```
+
+## Key points
+
+- `Optional a` has two constructors: `Some a` and `None`. There is no null and no runtime null-pointer error.
+- Always pattern match or use `fromOptional`/`optional` to extract a value — never assume `Some`.
+- Lists in DAML are singly-linked and immutable. `::` prepends; `++` concatenates two lists.
+- `DA.Optional` exports: `fromOptional`, `isSome`, `isNone`, `mapOptional`, `catOptionals`, `optionalToList`, `listToOptional`.
+- `DA.List` exports: `sortBy`, `groupBy`, `dedup`, `dedupOn`, `head`, `last`, `tail`, `take`, `drop`, `find`, `partition`.
+- `length`, `reverse`, `zip`, `unzip`, `concat`, `concatMap` are available without any import.

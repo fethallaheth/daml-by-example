@@ -1,0 +1,69 @@
+---
+title: "Your First Script"
+description: "Daml Script is the built-in testing and scripting framework. A script is a value of type `Script a` that sequences ledger operations using `do` notation. Each `submit` call represents one party sending a transaction to the ledger. Scripts run in a sandbox against an in-memory ledger."
+---
+
+```daml
+-- FirstScript.daml
+module FirstScript where
+
+import Daml.Script
+
+-- The template under test
+template Asset
+  with
+    issuer : Party
+    owner  : Party
+    name   : Text
+  where
+    signatory issuer
+    observer  owner
+
+    choice Transfer : ContractId Asset
+      with newOwner : Party
+      controller owner
+      do create this with owner = newOwner
+
+
+-- A Script is just a value of type Script ().
+-- `do` sequences Script actions top-to-bottom.
+assetTest : Script ()
+assetTest = do
+  -- 1. Allocate parties.
+  --    allocateParty creates a party on the sandbox ledger.
+  alice <- allocateParty "Alice"
+  bob   <- allocateParty "Bob"
+
+  -- 2. Alice creates an asset.
+  --    `submit party do` submits a transaction as `party`.
+  --    `createCmd T with ...` is the create command.
+  assetId <- submit alice do
+    createCmd Asset with
+      issuer = alice
+      owner  = alice
+      name   = "Gold"
+
+  -- 3. Alice transfers the asset to Bob.
+  --    `exerciseCmd contractId ChoiceName with ...` is the exercise command.
+  assetId2 <- submit alice do
+    exerciseCmd assetId Transfer with newOwner = bob
+
+  -- 4. Query the ledger to verify state.
+  --    queryContractId returns Optional T.
+  Some asset <- queryContractId bob assetId2
+  assert (asset.owner == bob)
+  assert (asset.name  == "Gold")
+
+  -- 5. Confirm the original contract is archived.
+  original <- queryContractId alice assetId
+  assert (original == None)
+```
+
+## Key points
+
+- `allocateParty "Name" : Script Party` creates a party on the sandbox. Party names are strings for human readability.
+- `submit party do createCmd T with ...` is a transaction: party creates contract T.
+- `createCmd` and `exerciseCmd` are the Script variants of `create` and `exercise`. They are only valid inside a `submit` block.
+- `queryContractId party cid : Script (Optional T)` reads the party's view of the ledger. A party can only query contracts visible to them.
+- Scripts run sequentially. Each `submit` is committed before the next line executes.
+- The `Script` monad is separate from the `Update` monad. You cannot use `Update` functions like `create` directly inside `do` at the Script level — they must be inside a `submit`.

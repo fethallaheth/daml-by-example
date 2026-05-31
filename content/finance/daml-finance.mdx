@@ -1,0 +1,95 @@
+---
+title: "DAML Finance"
+description: "DAML Finance is an open-source library of production-grade financial instrument templates maintained by Digital Asset. It provides standardized interfaces and implementations for holdings, instruments, settlement, and lifecycle events so you do not need to build them from scratch."
+---
+
+```daml
+-- DamlFinanceIntro.daml
+-- This page shows the package structure and key interfaces.
+-- To use daml-finance, add it to your daml.yaml dependencies.
+-- See: https://github.com/digital-asset/daml-finance
+
+module DamlFinanceIntro where
+
+-- ── daml.yaml dependency block ───────────────────────────
+-- dependencies:
+--   - daml-prim
+--   - daml-stdlib
+--   - daml-script
+--   - daml-finance-interface-types-common-4.0.0
+--   - daml-finance-interface-holding-4.0.0
+--   - daml-finance-interface-instrument-base-4.0.0
+--   - daml-finance-interface-settlement-4.0.0
+
+
+-- ── Core package map ─────────────────────────────────────
+--
+-- daml-finance-interface-holding
+--   Daml.Finance.Interface.Holding.Fungible    -- Split / Merge / Transfer
+--   Daml.Finance.Interface.Holding.Transferable -- Transfer only
+--
+-- daml-finance-interface-instrument-base
+--   Daml.Finance.Interface.Instrument.Base.Instrument -- view, getTime
+--
+-- daml-finance-interface-settlement
+--   Daml.Finance.Interface.Settlement.Factory   -- create settlement batches
+--   Daml.Finance.Interface.Settlement.Batch     -- execute/cancel settlement
+--   Daml.Finance.Interface.Settlement.Instruction -- individual leg
+--
+-- daml-finance-interface-lifecycle
+--   Daml.Finance.Interface.Lifecycle.Rule.Lifecycle -- process lifecycle events
+--   Daml.Finance.Interface.Lifecycle.Effect        -- pending effects
+--
+-- Concrete implementations live in non-interface packages:
+--   daml-finance-holding         (Account, Holding)
+--   daml-finance-instrument-bond (FixedRateBond, etc.)
+--   daml-finance-settlement      (RouteProvider, SettlementFactory)
+
+
+-- ── Key concepts ─────────────────────────────────────────
+--
+-- Account  : a relationship between an owner Party and a custodian Party.
+--            Holdings live inside accounts.
+--
+-- Holding  : a concrete quantity of an instrument inside an account.
+--            Implements Fungible (can be split/merged) or Transferable.
+--
+-- Instrument : describes what a holding represents (a bond, equity, cash).
+--              Identified by (depository, issuer, id, version).
+--
+-- InstrumentKey : (depository : Party, issuer : Party, id : Text, version : Text)
+--
+-- Settlement batch : a set of instructions that atomically DVP two or more legs.
+--
+-- Lifecycle : the process of applying a corporate action (coupon, dividend,
+--             maturity) to update instrument versions and produce effects.
+
+
+-- ── Minimal account setup (pseudocode) ───────────────────
+-- In practice you deploy the daml-finance packages to a ledger
+-- and interact via the Ledger API. The pattern is:
+--
+-- 1. Create an AccountFactory (custodian deploys once)
+-- 2. Each owner requests an Account via Propose/Accept
+-- 3. The custodian or issuer creates Holdings inside Accounts
+-- 4. Transfers and settlement use the Instruction/Batch pattern
+
+
+-- ── Reading a holding view ────────────────────────────────
+-- Once you have a ContractId of a Holding:
+--
+--   import Daml.Finance.Interface.Holding.Base qualified as Base
+--
+--   holdingView <- queryInterfaceContractId @Base.I alice holdingCid
+--   -- holdingView : Optional Base.View
+--   -- Base.View contains: account, instrument, amount, lock
+```
+
+## Key points
+
+- DAML Finance is on GitHub at `github.com/digital-asset/daml-finance` and has full documentation at `docs.daml.com/daml-finance/index.html`.
+- The library is interface-first: your application code depends on the interfaces (stable API), not the concrete implementations (can be swapped).
+- `InstrumentKey` `(depository, issuer, id, version)` is the canonical identifier for a financial instrument. A version change (e.g. after a coupon payment updates the instrument) creates a new `Instrument` contract while the key's `id` stays constant.
+- Settlement uses a Delivery vs Payment (DvP) model: a `Batch` contains multiple `Instruction` contracts that all settle atomically or not at all.
+- For new projects, prefer DAML Finance interfaces over hand-rolling your own `Token` or `Bond` templates — the interfaces are tested, audited, and interoperable.
+- The library targets DAML SDK 2.x and requires LF 1.15+.

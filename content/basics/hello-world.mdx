@@ -1,60 +1,32 @@
 ---
-title: "Hello, World!"
-description: "Your first DAML smart contract"
+title: "Hello World"
+description: "The minimal DAML file. Every `.daml` source file begins with a module declaration whose name must match the filename. DAML is a statically typed, pure functional language — values are computed from expressions, and side-effects on the ledger are represented as values of type `Update` or `Script`."
 ---
 
-# Hello, World!
+```daml
+-- HelloWorld.daml
+module HelloWorld where
 
-Welcome to DAML By Example. This is your first DAML smart contract.
+-- A top-level value with an explicit type signature.
+-- The colon : means "has type".
+greeting : Text
+greeting = "Hello, World!"
 
-## The Simplest Contract
+-- A function: takes a Text, returns a Text.
+-- <> is the string concatenation operator.
+greet : Text -> Text
+greet name = "Hello, " <> name <> "!"
 
-```daml title="HelloWorld.daml"
-daml 2.0
-module HelloWorld
-
-template Hello
-  with
-    owner: Party
-  where
-    signatory owner
-
-    choice SayHello: ()
-      controller owner
-      do
-        debug "Hello, World!"
-        return ()
+-- Function application uses spaces, not parentheses.
+result : Text
+result = greet "DAML"   -- evaluates to "Hello, DAML!"
 ```
 
-## Breaking It Down
+## Key points
 
-Let's understand each part:
-
-**Module declaration:** Every DAML file starts with `daml 2.0` and a `module` declaration.
-
-**Template definition:** The `template` keyword defines a contract template.
-
-**Template parameters:** `with` introduces the template's parameters. Here, `owner` is a `Party`.
-
-**Choices:** `choice` defines an action that can be exercised on the contract. `SayHello` is a choice with return type `()`.
-
-## Running the Contract
-
-To test this contract:
-
-```bash
-daml start
-```
-
-Then in another terminal:
-
-```bash
-daml script --dar .daml/dist/hello-world-0.0.1.dar
-```
-
-## Key Concepts
-
-- **Party** represents a participant in the ledger
-- **Signatory** is the party that must authorize the contract creation
-- **Choice** is an operation that can be performed on an active contract
-- **Controller** is the party authorized to exercise the choice
+- `module Name where` is required as the first non-comment line. The module name must match the filename exactly.
+- The single colon `:` means "has type". Type signatures are optional but strongly recommended.
+- Function application uses spaces: `greet "DAML"`, not `greet("DAML")`.
+- `<>` concatenates `Text` values.
+- DAML has no mutable variables. Every binding is immutable.
+- There is no `main` function. Top-level values are definitions, not sequential statements.

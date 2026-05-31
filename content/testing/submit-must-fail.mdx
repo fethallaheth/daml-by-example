@@ -1,0 +1,66 @@
+---
+title: "submitMustFail"
+description: "`submitMustFail` asserts that a transaction is rejected by the ledger. It is the negative testing primitive in Daml Script — the equivalent of expecting a revert. If the submission succeeds unexpectedly, the script itself fails."
+---
+
+```daml
+-- SubmitMustFail.daml
+module SubmitMustFail where
+
+import Daml.Script
+
+template Vault
+  with
+    owner   : Party
+    balance : Decimal
+  where
+    signatory owner
+    ensure balance >= 0.0
+
+    choice Withdraw : ContractId Vault
+      with amount : Decimal
+      controller owner
+      do
+        assertMsg "insufficient balance" (amount <= balance)
+        create this with balance = balance - amount
+
+
+vaultTest : Script ()
+vaultTest = do
+  alice <- allocateParty "Alice"
+  bob   <- allocateParty "Bob"
+
+  vaultId <- submit alice do
+    createCmd Vault with owner = alice; balance = 100.0
+
+  -- ── Reject: overdraft ───────────────────────────────
+  -- This should fail because 200 > 100.
+  submitMustFail alice do
+    exerciseCmd vaultId Withdraw with amount = 200.0
+
+  -- ── Reject: wrong controller ────────────────────────
+  -- Bob is not the owner, so he cannot exercise Withdraw.
+  submitMustFail bob do
+    exerciseCmd vaultId Withdraw with amount = 10.0
+
+  -- ── Reject: negative amount violates ensure ──────────
+  -- Creating a vault with negative balance fails ensure.
+  submitMustFail alice do
+    createCmd Vault with owner = alice; balance = -1.0
+
+  -- ── Confirm: valid withdrawal succeeds ──────────────
+  vaultId2 <- submit alice do
+    exerciseCmd vaultId Withdraw with amount = 50.0
+
+  Some vault <- queryContractId alice vaultId2
+  assert (vault.balance == 50.0)
+```
+
+## Key points
+
+- `submitMustFail party do ...` succeeds (passes) only if the ledger rejects the transaction.
+- If the ledger accepts a `submitMustFail` submission, the script fails immediately.
+- Use `submitMustFail` to test: authorization violations (wrong controller), `ensure` failures, `assert`/`assertMsg` failures, and stale `ContractId` references.
+- `submitMustFail` does not reveal the error type — it only asserts failure. To inspect the specific failure, use `trySubmit`.
+- Testing both happy paths and failure paths is essential. The ledger silently rejects invalid transactions in production; scripts make the expectation explicit.
+- Semicolons (`;`) can separate record fields on one line: `with owner = alice; balance = 100.0`.

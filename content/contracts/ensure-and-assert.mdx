@@ -1,0 +1,89 @@
+---
+title: "Ensure and Assert"
+description: "`ensure` is a contract-level invariant evaluated on every `create` action. `assert` and `assertMsg` are used inside choice bodies to check preconditions before ledger actions. Both abort the current transaction if they evaluate to `False`."
+---
+
+```daml
+-- EnsureAndAssert.daml
+module EnsureAndAssert where
+
+import DA.Time
+
+
+-- ── ensure: contract-level invariant ────────────────────
+-- Evaluated every time this template is instantiated.
+-- Guarantees that every active Loan on the ledger satisfies these conditions.
+template Loan
+  with
+    lender   : Party
+    borrower : Party
+    principal : Decimal
+    rate      : Decimal
+    dueDate   : Date
+  where
+    signatory lender
+    observer  borrower
+    ensure
+      principal > 0.0
+      && rate >= 0.0
+      && rate <= 1.0
+
+    -- Even when Transfer creates a new Loan, ensure runs again.
+    choice Transfer : ContractId Loan
+      with newBorrower : Party
+      controller lender
+      do
+        create this with borrower = newBorrower
+
+
+-- ── assert: choice-body precondition ────────────────────
+-- assert aborts the transaction with a generic error if False.
+-- assertMsg aborts with a custom error message.
+template Wallet
+  with
+    owner   : Party
+    balance : Decimal
+  where
+    signatory owner
+    ensure balance >= 0.0
+
+    choice Withdraw : ContractId Wallet
+      with amount : Decimal
+      controller owner
+      do
+        assertMsg "amount must be positive" (amount > 0.0)
+        assertMsg "insufficient funds"      (amount <= balance)
+        create this with balance = balance - amount
+
+    choice Deposit : ContractId Wallet
+      with amount : Decimal
+      controller owner
+      do
+        assertMsg "deposit amount must be positive" (amount > 0.0)
+        create this with balance = balance + amount
+
+
+-- ── Time-based assertion ─────────────────────────────────
+template TimeLock
+  with
+    owner      : Party
+    unlockTime : Time
+  where
+    signatory owner
+
+    choice Unlock : ()
+      controller owner
+      do
+        now <- getTime
+        assertMsg "contract is still locked" (now >= unlockTime)
+        return ()
+```
+
+## Key points
+
+- `ensure` is checked on every `create`, including creates that happen inside choice bodies. It is a class invariant, not a one-time guard.
+- `assert : Bool -> Update ()` aborts with an unspecified error. `assertMsg : Text -> Bool -> Update ()` aborts with the given message.
+- When `ensure` fails at runtime, the standard library raises a `PreconditionFailed` exception which can be caught with `try`/`catch`.
+- `assert` failures are not catchable — they abort the entire transaction.
+- `getTime : Update Time` returns the ledger time at the start of the transaction. It does not change during a transaction.
+- Multiple `ensure` conditions should be combined with `&&` rather than written as separate `ensure` lines (only the first is used if duplicated).

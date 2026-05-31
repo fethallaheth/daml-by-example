@@ -1,0 +1,105 @@
+---
+title: "Fungible Asset"
+description: "A fungible asset is one where units are interchangeable — any 10 USD is equivalent to any other 10 USD. This template demonstrates the full suite of fungibility operations: split, merge, and transfer, with strict conservation of quantity enforced by contract logic."
+---
+
+```daml
+-- FungibleAsset.daml
+module FungibleAsset where
+
+import Daml.Script
+
+
+template FungibleAsset
+  with
+    depository : Party   -- custodian / issuer
+    issuer     : Party   -- original creator
+    owner      : Party
+    id         : Text    -- asset type identifier (e.g. "USD", "GOLD")
+    quantity   : Decimal
+  where
+    signatory depository, issuer
+    observer  owner
+    ensure quantity > 0.0
+
+    -- ── Transfer ──────────────────────────────────────────
+    choice Transfer : ContractId FungibleAsset
+      with newOwner : Party
+      controller owner
+      do create this with owner = newOwner
+
+    -- ── Split ─────────────────────────────────────────────
+    -- Produces two assets whose quantities sum to the original.
+    choice Split : (ContractId FungibleAsset, ContractId FungibleAsset)
+      with splitQuantity : Decimal
+      controller owner
+      do
+        assertMsg "split quantity must be positive"         (splitQuantity > 0.0)
+        assertMsg "split quantity must be less than total"   (splitQuantity < quantity)
+        a <- create this with quantity = splitQuantity
+        b <- create this with quantity = quantity - splitQuantity
+        return (a, b)
+
+    -- ── Merge ─────────────────────────────────────────────
+    -- Combines two assets of the same type into one.
+    -- `others` is a list of ContractIds to merge in one step.
+    choice Merge : ContractId FungibleAsset
+      with others : [ContractId FungibleAsset]
+      controller owner
+      do
+        totalOther <- forA others $ \otherId -> do
+          other <- fetch otherId
+          assertMsg "asset id must match"    (other.id         == id)
+          assertMsg "owner must match"       (other.owner      == owner)
+          assertMsg "depository must match"  (other.depository == depository)
+          archive otherId
+          return other.quantity
+        let newQty = quantity + sum totalOther
+        create this with quantity = newQty
+
+    -- ── Redeem ────────────────────────────────────────────
+    choice Redeem : ()
+      controller depository
+      do return ()
+
+
+-- ── Test ─────────────────────────────────────────────────
+fungibleTest : Script ()
+fungibleTest = do
+  custodian <- allocateParty "Custodian"
+  issuer    <- allocateParty "Issuer"
+  alice     <- allocateParty "Alice"
+
+  -- Issue three separate asset contracts
+  a1 <- submitMultiParty [custodian, issuer] do
+    createCmd FungibleAsset with
+      depository = custodian; issuer; owner = alice; id = "USD"; quantity = 300.0
+
+  a2 <- submitMultiParty [custodian, issuer] do
+    createCmd FungibleAsset with
+      depository = custodian; issuer; owner = alice; id = "USD"; quantity = 200.0
+
+  a3 <- submitMultiParty [custodian, issuer] do
+    createCmd FungibleAsset with
+      depository = custodian; issuer; owner = alice; id = "USD"; quantity = 100.0
+
+  -- Merge all three into one
+  merged <- submit alice do
+    exerciseCmd a1 Merge with others = [a2, a3]
+
+  Some asset <- queryContractId alice merged
+  assert (asset.quantity == 600.0)
+
+  -- Verify originals are archived
+  r2 <- queryContractId alice a2
+  assert (r2 == None)
+```
+
+## Key points
+
+- `forA : [a] -> (a -> Update b) -> Update [b]` traverses a list inside the `Update` monad — the DAML equivalent of `for`/`forEach`.
+- `sum : [Decimal] -> Decimal` sums a list (available without import for numeric types).
+- The `Merge` choice takes a list of `ContractId`s, making it efficient to consolidate many small positions in one transaction.
+- Both `depository` and `issuer` are signatories, reflecting real-world custody relationships where the custodian co-signs issuance.
+- Conservation of quantity must be enforced in `Split` (`a + b = original`) and `Merge` (`original + sum(others)`). The ledger does not do this automatically.
+- This pattern is the foundation of the `daml-finance` library's `Fungible` interface (`Daml.Finance.Interface.Holding.Fungible`).

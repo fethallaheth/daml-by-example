@@ -1,0 +1,92 @@
+---
+title: "Divulgence"
+description: "Divulgence grants a party temporary visibility into a contract they are not a stakeholder of. It occurs when a contract is `fetch`ed inside a transaction that the non-stakeholder is a party to. The party gains visibility of the contract's data for the duration of that transaction but does not become a permanent stakeholder."
+---
+
+```daml
+-- Divulgence.daml
+module Divulgence where
+
+import Daml.Script
+
+
+-- A private contract — only the owner is a stakeholder.
+template Secret
+  with
+    owner   : Party
+    content : Text
+  where
+    signatory owner
+
+    -- Owner can share a read token with a specific party.
+    -- The token holds a reference to this contract.
+    nonconsuming choice ShareWith : ContractId ReadToken
+      with viewer : Party
+      controller owner
+      do
+        create ReadToken with owner; viewer; secretId = self
+
+
+-- ReadToken enables the viewer to fetch (and thus see) the Secret.
+-- The fetch inside `Read` divulges the Secret to the viewer
+-- for the scope of that transaction.
+template ReadToken
+  with
+    owner    : Party
+    viewer   : Party
+    secretId : ContractId Secret
+  where
+    signatory owner
+    observer  viewer
+
+    nonconsuming choice Read : Text
+      controller viewer
+      do
+        secret <- fetch secretId
+        return secret.content
+
+    -- Owner can revoke by archiving the token.
+    choice Revoke : ()
+      controller owner
+      do return ()
+
+
+-- ── Test ─────────────────────────────────────────────────
+divulgenceTest : Script ()
+divulgenceTest = do
+  alice <- allocateParty "Alice"
+  bob   <- allocateParty "Bob"
+
+  -- Alice creates a private secret
+  secretId <- submit alice do
+    createCmd Secret with
+      owner   = alice
+      content = "The vault code is 4242"
+
+  -- Alice shares a read token with Bob
+  tokenId <- submit alice do
+    exerciseCmd secretId ShareWith with viewer = bob
+
+  -- Bob reads the secret via the token
+  content <- submit bob do
+    exerciseCmd tokenId Read
+
+  assert (content == "The vault code is 4242")
+
+  -- Alice revokes Bob's access
+  submit alice do
+    exerciseCmd tokenId Revoke
+
+  -- Bob can no longer read
+  submitMustFail bob do
+    exerciseCmd tokenId Read
+```
+
+## Key points
+
+- Divulgence is distinct from being a stakeholder. A stakeholder relationship is permanent and recorded; divulgence within a transaction is temporary.
+- The `fetch` inside `Read` is what causes divulgence — the viewer is a party to the transaction, and the fetched contract's data is revealed to them within that transaction's scope.
+- On Canton (the production runtime), divulgence is subject to sub-transaction privacy rules. Prefer explicit `observer` declarations over relying on divulgence for permanent visibility.
+- The `ReadToken` pattern is a capability-based access control model: possessing the `ContractId` of a `ReadToken` is the proof of permission.
+- `self : ContractId Secret` inside the `Secret` template's choice body refers to the contract on which the choice is exercised.
+- Revocation works by archiving the `ReadToken`. The `Secret` itself is unaffected.

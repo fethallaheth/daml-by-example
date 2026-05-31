@@ -18,10 +18,10 @@ function sectionLabel(section: SectionKey): string {
 
 const SECTION_LABELS: Record<string, string> = {
   basics: "Basics",
-  templates: "Templates",
-  choices: "Choices",
-  interfaces: "Interfaces",
-  canton: "Canton",
+  contracts: "Contracts",
+  testing: "Testing",
+  patterns: "Patterns",
+  advanced: "Advanced",
   finance: "Finance",
 }
 

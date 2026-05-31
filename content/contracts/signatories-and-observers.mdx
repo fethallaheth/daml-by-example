@@ -1,0 +1,72 @@
+---
+title: "Signatories and Observers"
+description: "Every DAML contract has stakeholders: signatories who authorize its creation and archival, and observers who have visibility without authority. The distinction determines who must sign a transaction and who can see the contract on the ledger."
+---
+
+```daml
+-- SignatoriesAndObservers.daml
+module SignatoriesAndObservers where
+
+
+-- ── Single signatory ────────────────────────────────────
+-- Only the bank must authorize creation.
+-- The client observes (sees the contract) but is not a signer.
+template BankDeposit
+  with
+    bank   : Party
+    client : Party
+    amount : Decimal
+  where
+    signatory bank
+    observer  client
+    ensure amount > 0.0
+
+
+-- ── Multiple signatories ─────────────────────────────────
+-- Both parties must authorize the contract.
+-- This means NEITHER can create or archive it without the other.
+-- Comma-separated on one line, or use the `signatory` keyword twice.
+template BilateralAgreement
+  with
+    partyA : Party
+    partyB : Party
+    terms  : Text
+  where
+    signatory partyA, partyB
+
+
+-- ── List of observers ───────────────────────────────────
+-- The observer field can be a list of parties.
+template Announcement
+  with
+    issuer    : Party
+    audience  : [Party]
+    message   : Text
+  where
+    signatory issuer
+    observer  audience
+
+
+-- ── Computed signatories ─────────────────────────────────
+-- Signatories are expressions evaluated at runtime.
+-- Any party in the `with` block can be used.
+template ConditionalAuth
+  with
+    primary   : Party
+    secondary : Party
+    amount    : Decimal
+  where
+    -- If amount exceeds threshold, require both to sign.
+    signatory if amount > 10000.0 then [primary, secondary] else [primary]
+    observer  secondary
+    ensure amount > 0.0
+```
+
+## Key points
+
+- Signatories are automatically observers — you do not need to list them twice.
+- A party in the `observer` field can see the contract but cannot authorize actions or create choices using that contract's authority.
+- All signatories must authorize the transaction that creates or archives the contract.
+- The controller of a choice must be an observer or signatory of the contract; otherwise they cannot see it to exercise it.
+- Signatories are expressions: they can be a single `Party`, a list `[Party]`, a conditional, or any expression of type `Party` or `[Party]`.
+- There must be at least one signatory. An empty signatory list is a compile-time error.

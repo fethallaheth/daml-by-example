@@ -6,10 +6,10 @@ import { ThemeToggle } from "@/components/ThemeToggle"
 
 const sectionIcons: Record<string, React.ReactNode> = {
   basics: <BookOpen className="h-5 w-5 text-accent" />,
-  templates: <Code className="h-5 w-5 text-accent" />,
-  choices: <FileJson className="h-5 w-5 text-accent" />,
-  interfaces: <Blocks className="h-5 w-5 text-accent" />,
-  canton: <Network className="h-5 w-5 text-accent" />,
+  contracts: <Code className="h-5 w-5 text-accent" />,
+  testing: <Network className="h-5 w-5 text-accent" />,
+  patterns: <Blocks className="h-5 w-5 text-accent" />,
+  advanced: <FileJson className="h-5 w-5 text-accent" />,
   finance: <Database className="h-5 w-5 text-accent" />,
 }
 
@@ -18,16 +18,16 @@ function getIcon(sectionKey: string): React.ReactNode {
 }
 
 const sectionDescriptions: Record<string, string> = {
-  basics: "Core concepts and your first contract",
-  templates: "Structure and patterns for DAML templates",
-  choices: "How choices drive contract evolution",
-  interfaces: "Polymorphism and contract abstraction",
-  canton: "Running DAML on the Canton Network",
-  finance: "Financial instruments in DAML",
+  basics: "Core language concepts: types, functions, lists, and optional values.",
+  contracts: "Templates, signatories, choices, and contract keys on the ledger.",
+  testing: "Daml Script: writing tests, asserting failures, and querying ledger state.",
+  patterns: "IOU, propose-accept, escrow, and divulgence — real-world contract patterns.",
+  advanced: "Interfaces for polymorphism and structured exception handling.",
+  finance: "Tokens, bonds, fungible assets, and the DAML Finance library.",
 }
 
-function getDescription(sectionKey: string, items: { description?: string }[]): string {
-  return sectionDescriptions[sectionKey] || items[0]?.description || ""
+function getDescription(sectionKey: string): string {
+  return sectionDescriptions[sectionKey] || ""
 }
 
 export default function Home() {
@@ -67,8 +67,9 @@ export default function Home() {
 
         <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {sidebar.map((section, i) => (
-            <div
+            <Link
               key={section.key}
+              href={`/${section.key}/${section.items[0]?.slug || ""}`}
               className={`group rounded-lg border border-neutral-200 bg-white p-5 sm:p-6 transition-all hover:border-neutral-300 hover:-translate-y-0.5 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:border-neutral-700 ${i === 0 ? 'sm:col-span-2 lg:col-span-1' : ''}`}
             >
               <div className="mb-3 flex items-center gap-2">
@@ -77,23 +78,10 @@ export default function Home() {
                   {section.title}
                 </h2>
               </div>
-              <p className="mb-3 text-sm text-neutral-500 dark:text-neutral-400">
-                {getDescription(section.key, section.items)}
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                {getDescription(section.key)}
               </p>
-              <ul className="space-y-1.5">
-                {section.items.slice(0, 3).map((item) => (
-                  <li key={item.slug}>
-                    <Link
-                      href={`/${section.key}/${item.slug}`}
-                      className="group/link flex items-center gap-1.5 text-sm text-neutral-600 transition-colors hover:text-accent dark:text-neutral-400 dark:hover:text-accent"
-                    >
-                      <ArrowRight className="h-3.5 w-3.5 shrink-0 text-accent/60 transition-colors group-hover/link:text-accent" />
-                      {item.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            </Link>
           ))}
         </div>
       </main>

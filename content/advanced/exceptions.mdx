@@ -1,0 +1,128 @@
+---
+title: "Exceptions"
+description: "DAML supports structured exception handling via `try`/`catch` blocks inside `Update` actions. When an exception is caught, the ledger changes made within the `try` block are rolled back, but the transaction can continue. Custom exception types are declared with the `exception` keyword."
+---
+
+```daml
+-- Exceptions.daml
+module Exceptions where
+
+import DA.Exception
+import Daml.Script
+
+
+-- ── 1. Custom exception type ─────────────────────────────
+-- Declared with `exception`. Must define a `message` function.
+exception InsufficientFunds
+  with
+    available : Decimal
+    requested : Decimal
+  where
+    message
+      "Insufficient funds: requested " <> show requested
+      <> " but only " <> show available <> " available"
+
+exception TransferLimitExceeded
+  with
+    limit  : Decimal
+    amount : Decimal
+  where
+    message "Transfer of " <> show amount <> " exceeds limit " <> show limit
+
+
+-- ── 2. Throwing exceptions ────────────────────────────────
+template Account
+  with
+    owner          : Party
+    balance        : Decimal
+    transferLimit  : Decimal
+  where
+    signatory owner
+    ensure balance >= 0.0
+
+    choice Withdraw : ContractId Account
+      with amount : Decimal
+      controller owner
+      do
+        when (amount > transferLimit) $
+          throw TransferLimitExceeded with limit = transferLimit; amount
+        when (amount > balance) $
+          throw InsufficientFunds with available = balance; requested = amount
+        create this with balance = balance - amount
+
+
+-- ── 3. Catching exceptions ────────────────────────────────
+template Shop
+  with
+    shopOwner : Party
+  where
+    signatory shopOwner
+
+    -- Try to charge the account. If it fails, record the debt instead.
+    nonconsuming choice ProcessOrder : ()
+      with
+        buyer       : Party
+        accountId   : ContractId Account
+        price       : Decimal
+      controller shopOwner
+      do
+        try do
+          exercise accountId Withdraw with amount = price
+          return ()
+        catch
+          (InsufficientFunds _ _) -> do
+            -- Ledger changes inside the `try` are rolled back.
+            -- We can take a different action here.
+            create IouDebt with debtor = buyer; creditor = shopOwner; amount = price
+            return ()
+          (TransferLimitExceeded _ _) -> do
+            return ()
+
+
+-- ── Supporting template ───────────────────────────────────
+template IouDebt
+  with
+    debtor   : Party
+    creditor : Party
+    amount   : Decimal
+  where
+    signatory creditor
+    observer  debtor
+
+
+-- ── Test ─────────────────────────────────────────────────
+exceptionTest : Script ()
+exceptionTest = do
+  alice <- allocateParty "Alice"
+  shop  <- allocateParty "Shop"
+
+  accountId <- submit alice do
+    createCmd Account with
+      owner         = alice
+      balance       = 50.0
+      transferLimit = 1000.0
+
+  shopId <- submit shop do
+    createCmd Shop with shopOwner = shop
+
+  -- Order for 200 — Alice cannot afford it.
+  -- The catch clause creates an IouDebt instead.
+  submit shop do
+    exerciseCmd shopId ProcessOrder with
+      buyer     = alice
+      accountId = accountId
+      price     = 200.0
+
+  -- Confirm IouDebt was created
+  debts <- query @IouDebt shop
+  assert (length debts == 1)
+```
+
+## Key points
+
+- `exception Name with fields where message expr` declares a throwable/catchable type.
+- `throw e` inside `Update` aborts the current sub-transaction and propagates the exception up.
+- `try do ... catch (ExType fields) -> ...` catches a specific exception type. Multiple `catch` clauses are tried top-to-bottom; the first match wins.
+- When an exception is caught, all ledger changes (creates, archives) made inside the `try` block are rolled back. The transaction continues from the `catch` clause.
+- Built-in exceptions: `PreconditionFailed` (from `ensure` failure), `ArithmeticError` (divide by zero, overflow).
+- Errors that are not exceptions — such as exercising an archived contract — still abort the entire transaction and cannot be caught.

@@ -1,0 +1,131 @@
+---
+title: "Bond Contract"
+description: "A bond is a fixed-income debt instrument. The issuer (borrower) owes the owner (holder) a series of coupon payments and a final principal repayment at maturity. This template models the full lifecycle: issuance, coupon payment, transfer, and maturity."
+---
+
+```daml
+-- Bond.daml
+module Bond where
+
+import DA.Date
+import Daml.Script
+
+
+template Bond
+  with
+    issuer       : Party
+    owner        : Party
+    isin         : Text       -- unique instrument identifier
+    principal    : Decimal    -- face value
+    couponRate   : Decimal    -- annual rate, e.g. 0.05 for 5%
+    maturityDate : Date
+    currency     : Text
+  where
+    signatory issuer
+    observer  owner
+    ensure
+      principal > 0.0
+      && couponRate >= 0.0
+      && couponRate <= 1.0
+
+    key (issuer, isin) : (Party, Text)
+    maintainer key._1
+
+    -- Owner transfers the bond to a new party.
+    choice Transfer : ContractId Bond
+      with newOwner : Party
+      controller owner
+      do create this with owner = newOwner
+
+    -- Issuer makes a coupon payment.
+    -- In a real system this would exercise a Cash token to make payment.
+    -- Here we record the event and keep the bond active.
+    nonconsuming choice PayCoupon : ContractId CouponPayment
+      with
+        paymentDate : Date
+        amount      : Decimal
+      controller issuer
+      do
+        assertMsg "coupon amount must be positive" (amount > 0.0)
+        create CouponPayment with
+          issuer; owner; isin; amount; paymentDate; currency
+
+    -- Issuer redeems the bond at maturity, returning principal.
+    choice Mature : ContractId MaturityReceipt
+      with today : Date
+      controller issuer
+      do
+        assertMsg "bond has not yet matured" (today >= maturityDate)
+        create MaturityReceipt with
+          issuer; owner; isin; principal; currency; maturityDate
+
+
+template CouponPayment
+  with
+    issuer      : Party
+    owner       : Party
+    isin        : Text
+    amount      : Decimal
+    paymentDate : Date
+    currency    : Text
+  where
+    signatory issuer
+    observer  owner
+
+
+template MaturityReceipt
+  with
+    issuer       : Party
+    owner        : Party
+    isin         : Text
+    principal    : Decimal
+    currency     : Text
+    maturityDate : Date
+  where
+    signatory issuer
+    observer  owner
+
+
+-- ── Test ─────────────────────────────────────────────────
+bondTest : Script ()
+bondTest = do
+  bank  <- allocateParty "Bank"
+  alice <- allocateParty "Alice"
+
+  let maturity = date 2026 Dec 31
+
+  bondId <- submit bank do
+    createCmd Bond with
+      issuer       = bank
+      owner        = alice
+      isin         = "XS0000000001"
+      principal    = 10000.0
+      couponRate   = 0.05
+      maturityDate = maturity
+      currency     = "USD"
+
+  -- Bank pays a coupon
+  couponId <- submit bank do
+    exerciseCmd bondId PayCoupon with
+      paymentDate = date 2026 Jun 30
+      amount      = 250.0   -- 5% annual, semi-annual payment
+
+  Some coupon <- queryContractId alice couponId
+  assert (coupon.amount == 250.0)
+
+  -- Bank matures the bond
+  receiptId <- submit bank do
+    exerciseCmd bondId Mature with today = date 2027 Jan 1
+
+  Some receipt <- queryContractId alice receiptId
+  assert (receipt.principal == 10000.0)
+```
+
+## Key points
+
+- `DA.Date` exports `date y m d : Year -> Month -> Day -> Date` for constructing date literals. `Month` is an enum: `Jan`, `Feb`, ..., `Dec`.
+- `nonconsuming choice PayCoupon` keeps the bond alive after payment — coupon payments happen multiple times over the bond's life.
+- `Mature` is consuming: it archives the bond and creates a `MaturityReceipt`, modelling redemption.
+- The `isin` key ensures only one active bond contract per issuer per instrument code.
+- In production DAML Finance, `CouponPayment` would be replaced by an actual settlement of a cash instrument. This example uses a receipt pattern for clarity.
+- `couponRate` is stored on the contract so the issuer can compute payment amounts off-chain; the amount is passed into `PayCoupon` as an argument.

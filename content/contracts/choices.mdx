@@ -1,0 +1,73 @@
+---
+title: "Choices"
+description: "A `choice` is the only mechanism by which a contract can be acted upon. Choices run inside the `Update` monad — a sequenced set of ledger actions that execute atomically. By default, exercising a choice archives the contract. The `nonconsuming` keyword prevents archival."
+---
+
+```daml
+-- Choices.daml
+module Choices where
+
+
+template Token
+  with
+    issuer  : Party
+    owner   : Party
+    amount  : Decimal
+  where
+    signatory issuer
+    observer  owner
+    ensure amount > 0.0
+
+    -- ── Consuming choice (default) ───────────────────────
+    -- Archives this contract, returns a new ContractId.
+    -- Only `owner` can exercise this.
+    choice Transfer : ContractId Token
+      with
+        newOwner : Party
+      controller owner
+      do
+        -- `this` is the current contract record.
+        -- `create this with field = value` makes a modified copy.
+        create this with owner = newOwner
+
+    -- ── Nonconsuming choice ──────────────────────────────
+    -- Contract survives. Can be exercised multiple times.
+    nonconsuming choice GetAmount : Decimal
+      controller owner
+      do
+        return amount
+
+    -- ── Choice with multiple controllers ────────────────
+    -- ALL listed parties must authorize.
+    choice MutualBurn : ()
+      controller [issuer, owner]
+      do
+        return ()
+
+    -- ── Choice with arguments and assertions ─────────────
+    choice Split : (ContractId Token, ContractId Token)
+      with
+        splitAmount : Decimal
+      controller owner
+      do
+        assert (splitAmount > 0.0)
+        assert (splitAmount < amount)
+        part1 <- create this with amount = splitAmount
+        part2 <- create this with amount = amount - splitAmount
+        return (part1, part2)
+
+    -- ── Issuer can archive independently ─────────────────
+    choice Revoke : ()
+      controller issuer
+      do
+        return ()
+```
+
+## Key points
+
+- A choice name must start with a capital letter and must be unique across the entire project (not just the template).
+- The choice body is a `do` block of type `Update a`, where `a` is the declared return type.
+- `this` refers to the current contract's field values. `self` is the `ContractId` of the current contract.
+- `nonconsuming` allows a choice to be exercised repeatedly without archiving the contract.
+- Multiple controllers form a conjunction: all must authorize. To require any one of several parties, use separate choices.
+- The `do` block can contain: `create`, `exercise`, `fetch`, `archive`, `assert`, `assertMsg`, `getTime`, `return`, and `let`.
