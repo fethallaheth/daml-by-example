@@ -156,12 +156,12 @@ export function SearchDialog() {
                 aria-label="Search documentation"
                 className="h-12 w-full border-0 bg-transparent px-3 text-sm outline-none placeholder:text-neutral-400"
               />
-              <kbd className="hidden shrink-0 rounded border border-neutral-200 px-1.5 py-0.5 text-[10px] text-neutral-400 sm:inline-block dark:border-neutral-700">
+              <kbd className="hidden shrink-0 rounded border border-neutral-200 px-1.5 py-0.5 text-[10px] text-neutral-400 sm:inline-block dark:border-neutral-800">
                 ESC
               </kbd>
               <button
                 onClick={() => setOpen(false)}
-                className="ml-2 rounded-md p-1 text-neutral-400 transition-colors hover:text-neutral-600 sm:hidden dark:hover:text-neutral-300"
+                className="ml-2 rounded-md p-1 text-neutral-400 transition-colors hover:text-accent sm:hidden dark:hover:text-accent"
                 ref={closeRef}
                 aria-label="Close search"
               >

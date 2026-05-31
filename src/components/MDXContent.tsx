@@ -21,7 +21,7 @@ const components = {
     }
     return (
       <code
-        className="rounded-md bg-accent-surface px-1.5 py-0.5 text-sm font-mono text-accent dark:bg-accent-surface dark:text-accent"
+        className="rounded-md bg-neutral-100 px-1.5 py-0.5 text-sm font-mono text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200"
         {...props}
       >
         {children}
@@ -67,7 +67,7 @@ const components = {
   ),
   blockquote: ({ children, ...props }: React.ComponentPropsWithoutRef<"blockquote">) => (
     <blockquote
-      className="my-6 border-l-2 border-neutral-300 bg-neutral-50 px-4 py-2 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400"
+      className="my-6 border-l-2 border-neutral-200 bg-neutral-50 px-4 py-2 text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400"
       {...props}
     >
       {children}

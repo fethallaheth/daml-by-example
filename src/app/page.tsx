@@ -21,7 +21,7 @@ const sectionDescriptions: Record<string, string> = {
   basics: "Core language concepts: types, functions, lists, and optional values.",
   contracts: "Templates, signatories, choices, and contract keys on the ledger.",
   testing: "Daml Script: writing tests, asserting failures, and querying ledger state.",
-  patterns: "IOU, propose-accept, and escrow - real-world contract patterns.",
+  patterns: "IOU, propose-accept, and escrow: real-world contract patterns.",
   advanced: "Interfaces for polymorphism and structured exception handling.",
   finance: "Tokens, bonds, fungible assets, and the DAML Finance library.",
 }
@@ -66,11 +66,11 @@ export default function Home() {
         </div>
 
         <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {sidebar.map((section, i) => (
+          {sidebar.map((section) => (
             <Link
               key={section.key}
               href={`/${section.key}/${section.items[0]?.slug || ""}`}
-              className={`group rounded-lg border border-neutral-200 bg-white p-5 sm:p-6 transition-colors hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:border-neutral-700 ${i === 0 ? 'sm:col-span-2 lg:col-span-1' : ''}`}
+              className={`group rounded-lg border border-neutral-200 bg-white p-5 sm:p-6 transition-colors hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:border-neutral-700`}
             >
               <div className="mb-3 flex items-center gap-2">
                 {getIcon(section.key)}

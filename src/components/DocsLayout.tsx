@@ -71,7 +71,7 @@ export function DocsLayout({
       </div>
 
       <div
-        className={`flex flex-1 flex-col transition-[padding] duration-300 lg:pl-72`}
+        className={`flex flex-1 flex-col lg:pl-72`}
       >
         <header className="sticky top-0 z-30 flex h-14 sm:h-16 shrink-0 items-center border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-neutral-800 dark:bg-neutral-950/95 dark:supports-[backdrop-filter]:bg-neutral-950/80">
           <div className="flex w-full items-center">
