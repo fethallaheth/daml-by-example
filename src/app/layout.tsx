@@ -11,6 +11,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://daml-by-example.vercel.app"),
   title: {
     default: "DAML By Example",
     template: "%s - DAML By Example",
@@ -21,15 +22,24 @@ export const metadata: Metadata = {
     description: "Learn DAML smart contracts through practical examples.",
     type: "website",
     siteName: "DAML By Example",
+    url: "/",
+    locale: "en_US",
+    images: ["/logo.svg"],
   },
   twitter: {
     card: "summary_large_image",
     title: "DAML By Example",
     description: "Learn DAML smart contracts through practical examples.",
+    images: ["/logo.svg"],
   },
   robots: {
     index: true,
     follow: true,
+  },
+  icons: {
+    icon: "/logo.svg",
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
   },
 }
 
