@@ -36,14 +36,18 @@ export function CodeBlock({ code, language, filename }: CodeBlockProps) {
     try {
       await navigator.clipboard.writeText(code)
     } catch {
-      const ta = document.createElement("textarea")
-      ta.value = code
-      ta.style.position = "fixed"
-      ta.style.opacity = "0"
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand("copy")
-      document.body.removeChild(ta)
+      try {
+        const ta = document.createElement("textarea")
+        ta.value = code
+        ta.style.position = "fixed"
+        ta.style.opacity = "0"
+        document.body.appendChild(ta)
+        ta.select()
+        document.execCommand("copy")
+        document.body.removeChild(ta)
+      } catch {
+        // Clipboard unavailable — ignore silently
+      }
     }
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Menu, X, ArrowLeft, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { Sidebar } from "./Sidebar"
@@ -26,6 +26,18 @@ export function DocsLayout({
   breadcrumbItems,
 }: DocsLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    setReady(true)
+    const mq = window.matchMedia("(min-width: 1024px)")
+    setSidebarOpen(mq.matches)
+    const handler = (e: MediaQueryListEvent) => {
+      setSidebarOpen(e.matches)
+    }
+    mq.addEventListener("change", handler)
+    return () => mq.removeEventListener("change", handler)
+  }, [])
 
   const allItems: { path: string; title: string }[] = []
   for (const section of sections) {
@@ -49,7 +61,10 @@ export function DocsLayout({
       />
 
       <div
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-neutral-200 bg-white transition-transform duration-300 dark:border-neutral-800 dark:bg-neutral-950 max-lg:max-w-[85vw] lg:z-30 lg:translate-x-0 ${
+        data-pagefind-ignore
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-neutral-200 bg-white transition-transform duration-300 dark:border-neutral-800 dark:bg-neutral-950 max-lg:max-w-[85vw] lg:z-30 ${
+          !ready ? 'lg:translate-x-0' : ''
+        } ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -59,7 +74,7 @@ export function DocsLayout({
           </Link>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="rounded-md p-1.5 text-neutral-400 transition-colors hover:text-accent dark:text-neutral-400 lg:hidden"
+            className="rounded-md p-1.5 text-neutral-400 transition-colors hover:text-accent dark:text-neutral-400"
             aria-label="Close sidebar"
           >
             <X className="h-5 w-5" />
@@ -71,15 +86,17 @@ export function DocsLayout({
       </div>
 
       <div
-        className={`flex flex-1 flex-col lg:pl-72`}
+        className={`flex flex-1 flex-col ${
+          !ready ? 'lg:pl-72' : sidebarOpen ? 'lg:pl-72' : ''
+        }`}
       >
-        <header className="sticky top-0 z-30 flex h-14 sm:h-16 shrink-0 items-center border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-neutral-800 dark:bg-neutral-950/95 dark:supports-[backdrop-filter]:bg-neutral-950/80">
+        <header data-pagefind-ignore className="sticky top-0 z-30 flex h-14 sm:h-16 shrink-0 items-center border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-neutral-800 dark:bg-neutral-950/95 dark:supports-[backdrop-filter]:bg-neutral-950/80">
           <div className="flex w-full items-center">
             <div className="flex w-auto shrink-0 items-center justify-center pl-2 pr-1 sm:w-16 sm:px-4">
               {!sidebarOpen && (
                 <button
                   onClick={() => setSidebarOpen(true)}
-                  className="rounded-md p-1.5 text-neutral-400 transition-colors hover:text-accent dark:text-neutral-400 lg:hidden"
+                  className="rounded-md p-1.5 text-neutral-400 transition-colors hover:text-accent dark:text-neutral-400"
                   aria-label="Open sidebar"
                 >
                   <Menu className="h-5 w-5" />
@@ -100,7 +117,7 @@ export function DocsLayout({
           <div className="flex w-full justify-center gap-8 xl:gap-12">
             <div className="min-w-0 max-w-5xl flex-1">
               <Breadcrumb items={breadcrumbItems} />
-              <article>
+              <article data-pagefind-body>
                 {(breadcrumbItems.length > 0) && (
                   <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 mb-6">
                     {breadcrumbItems[breadcrumbItems.length - 1]?.label}

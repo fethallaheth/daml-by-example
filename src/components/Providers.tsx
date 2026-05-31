@@ -1,7 +1,6 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react"
-import Script from "next/script"
 
 type Theme = "light" | "dark"
 
@@ -45,9 +44,6 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <ThemeCtx.Provider value={{ theme, resolvedTheme: theme, setTheme }}>
-      <Script id="theme-init" strategy="beforeInteractive">
-        {`(function(){var t=localStorage.getItem("theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark")}})()`}
-      </Script>
       {children}
     </ThemeCtx.Provider>
   )

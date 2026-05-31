@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowRight, BookOpen, Code, Network, FileJson, Database, Blocks, FileText } from "lucide-react"
+import { BookOpen, Code, Network, FileJson, Database, Blocks, FileText } from "lucide-react"
 import { getSidebar } from "@/lib/sidebar"
 import { SearchDialog } from "@/components/SearchDialog"
 import { ThemeToggle } from "@/components/ThemeToggle"
@@ -35,7 +35,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950">
-      <header className="sticky top-0 z-20 border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-neutral-800 dark:bg-neutral-950/95 dark:supports-[backdrop-filter]:bg-neutral-950/80">
+      <header data-pagefind-ignore className="sticky top-0 z-20 border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-neutral-800 dark:bg-neutral-950/95 dark:supports-[backdrop-filter]:bg-neutral-950/80">
         <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-4 sm:px-8">
           <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
             DAML By Example
@@ -43,18 +43,11 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <SearchDialog />
             <ThemeToggle />
-            <Link
-              href={`/${sidebar[0]?.key}/${sidebar[0]?.items[0]?.slug || ""}`}
-              className="ml-2 inline-flex h-10 items-center rounded-md bg-accent px-3 sm:px-4 text-sm font-medium text-white transition-colors hover:bg-accent/85 sm:h-9 dark:bg-accent dark:text-white dark:hover:bg-accent/85"
-            >
-              Get Started
-              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-            </Link>
           </div>
         </div>
       </header>
 
-      <main id="main-content" className="mx-auto max-w-7xl px-3 py-16 sm:px-6 sm:py-20 lg:py-24">
+      <main data-pagefind-body id="main-content" className="mx-auto max-w-7xl px-3 py-16 sm:px-6 sm:py-20 lg:py-24">
         <div className="mb-14 sm:mb-20 text-center">
           <h1 className="mb-4 sm:mb-5 text-4xl font-bold tracking-tighter text-neutral-900 sm:text-5xl lg:text-6xl dark:text-neutral-100">
             DAML By Example

@@ -2,27 +2,24 @@
 
 import { useEffect, useRef, useState, useCallback } from "react"
 import { Search } from "lucide-react"
-import { cn } from "@/lib/utils"
 
-interface PagefindResult {
-  id: string
-  data: () => Promise<{
-    url: string
-    title: string
-    excerpt: string
-  }>
-}
+let pagefindLoaded: Promise<any> | null = null
 
-interface PagefindInstance {
-  search: (query: string) => Promise<{
-    results: PagefindResult[]
-  }>
-}
-
-declare global {
-  interface Window {
-    pagefind: PagefindInstance
+function loadPagefind() {
+  if (!pagefindLoaded) {
+    pagefindLoaded = new Promise((resolve) => {
+      const s = document.createElement("script")
+      s.type = "module"
+      s.textContent = `import("/pagefind/pagefind.js").then(m => { window.__pagefind = m; })`
+      document.body.appendChild(s)
+      const check = () => {
+        if ((window as any).__pagefind) resolve((window as any).__pagefind)
+        else setTimeout(check, 50)
+      }
+      check()
+    })
   }
+  return pagefindLoaded
 }
 
 export function SearchDialog() {
@@ -96,11 +93,8 @@ export function SearchDialog() {
 
     setLoading(true)
     try {
-      const pagefind = window.pagefind
-      if (!pagefind) {
-        setResults([])
-        return
-      }
+      await loadPagefind()
+      const pagefind = (window as any).__pagefind
       const searchResult = await pagefind.search(value)
       const items = await Promise.all(
         searchResult.results.slice(0, 10).map(async (r) => {
@@ -108,7 +102,13 @@ export function SearchDialog() {
           return data
         })
       )
-      setResults(items)
+      const filtered = items.filter(
+        (item) => !item.url.includes("/_not-found") && !item.url.includes("/_global-error")
+      )
+      for (const item of filtered) {
+        item.url = item.url.replace(/^\/server\/app(?:\/\(docs\))?/, "").replace(/\.html$/, "") || "/"
+      }
+      setResults(filtered)
     } catch {
       setResults([])
     } finally {
@@ -133,7 +133,7 @@ export function SearchDialog() {
       <button
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
-        className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-500 transition-colors hover:bg-accent-surface hover:text-accent sm:h-9 sm:w-9 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400 dark:hover:bg-accent-surface dark:hover:text-accent"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-500 transition-colors hover:bg-accent-surface hover:text-accent dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400 dark:hover:bg-accent-surface dark:hover:text-accent"
       >
         <Search className="h-4 w-4" />
         <span className="sr-only">Search</span>

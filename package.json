@@ -7,7 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "postbuild": "pagefind --site .next --output-path public/pagefind"
+    "postbuild": "pagefind --site .next/server/app --output-path public/pagefind"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
