@@ -81,9 +81,17 @@ template TimeLock
 
 ## Key points
 
+### Contract invariants
+
 - `ensure` is checked on every `create`, including creates that happen inside choice bodies. It is a class invariant, not a one-time guard.
-- `assert : Bool -> Update ()` aborts with an unspecified error. `assertMsg : Text -> Bool -> Update ()` aborts with the given message.
-- When `ensure` fails at runtime, the standard library raises a `PreconditionFailed` exception which can be caught with `try`/`catch`.
-- `assert` failures are not catchable — they abort the entire transaction.
-- `getTime : Update Time` returns the ledger time at the start of the transaction. It does not change during a transaction.
 - Multiple `ensure` conditions should be combined with `&&` rather than written as separate `ensure` lines (only the first is used if duplicated).
+
+### Runtime assertions
+
+- `assert : Bool -> Update ()` aborts with an unspecified error. `assertMsg : Text -> Bool -> Update ()` aborts with the given message.
+- `getTime : Update Time` returns the ledger time at the start of the transaction. It does not change during a transaction.
+
+### Error handling
+
+- When `ensure` fails at runtime, the standard library raises a `PreconditionFailed` exception which can be caught with `try`/`catch`.
+- `assert` failures are not catchable: they abort the entire transaction.

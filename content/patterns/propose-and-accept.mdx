@@ -83,9 +83,17 @@ proposeAcceptTest = do
 
 ## Key points
 
+### Motivation
+
 - A multi-signatory contract cannot be created in a single step unless all signatories are already parties to the authorizing transaction. The Propose/Accept pattern stages this.
 - The `TradeProposal` has only `seller` as signatory, so Alice can create it alone. `Accept` is controlled by `buyer`, whose authorization creates the `Trade` with both signatories.
-- `Retract` lets the proposer cancel before the counterparty responds — this is essential for any realistic proposal.
+
+### Choices
+
+- `Retract` lets the proposer cancel before the counterparty responds: this is essential for any realistic proposal.
 - `Decline` is separate from `Retract` to distinguish who took the action on the ledger.
 - The pattern extends naturally to three parties: Party A proposes → B accepts (2-sig proposal) → C accepts (3-sig contract).
+
+### Syntax
+
 - Field punning: `seller; buyer; asset; price` inside `create Trade with` is shorthand for `seller = seller; buyer = buyer; ...`.

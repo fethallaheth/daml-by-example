@@ -1,6 +1,6 @@
 ---
 title: "Hello World"
-description: "The minimal DAML file. Every `.daml` source file begins with a module declaration whose name must match the filename. DAML is a statically typed, pure functional language — values are computed from expressions, and side-effects on the ledger are represented as values of type `Update` or `Script`."
+description: "The minimal DAML file. Every `.daml` source file begins with a module declaration whose name must match the filename. DAML is a statically typed, pure functional language: values are computed from expressions, and side-effects on the ledger are represented as values of type `Update` or `Script`."
 ---
 
 ```daml
@@ -24,9 +24,17 @@ result = greet "DAML"   -- evaluates to "Hello, DAML!"
 
 ## Key points
 
+### Module structure
+
 - `module Name where` is required as the first non-comment line. The module name must match the filename exactly.
+
+### Types & syntax
+
 - The single colon `:` means "has type". Type signatures are optional but strongly recommended.
 - Function application uses spaces: `greet "DAML"`, not `greet("DAML")`.
 - `<>` concatenates `Text` values.
+
+### Immutability
+
 - DAML has no mutable variables. Every binding is immutable.
 - There is no `main` function. Top-level values are definitions, not sequential statements.

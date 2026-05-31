@@ -1,6 +1,6 @@
 ---
 title: "First Contract"
-description: "A `template` is a blueprint for a contract. Contracts are instances of templates — they live on the ledger and are immutable. The only way to create a new contract is via a `create` action; the only way to destroy one is via a consuming choice. Fields are declared under `with`; the contract logic lives under `where`."
+description: "A `template` is a blueprint for a contract. Contracts are instances of templates: they live on the ledger and are immutable. The only way to create a new contract is via a `create` action; the only way to destroy one is via a consuming choice. Fields are declared under `with`; the contract logic lives under `where`."
 ---
 
 ```daml
@@ -36,9 +36,17 @@ template Asset
 
 ## Key points
 
+### Template structure
+
 - A `template` produces a record type of the same name that is used to construct `create` commands.
+- DAML is not object-oriented. Templates do not inherit from each other; use interfaces for polymorphism.
+
+### Contract lifecycle
+
 - `this` refers to the current contract's data inside a choice body.
 - `self` refers to the `ContractId` of the current contract inside a choice body.
-- `signatory`, `observer`, `ensure`, and `agreement` are evaluated when the contract is created.
 - A `ContractId T` is a typed reference to an active contract. It becomes stale (unusable) once the contract is archived.
-- DAML is not object-oriented. Templates do not inherit from each other; use interfaces for polymorphism.
+
+### Configuration
+
+- `signatory`, `observer`, `ensure`, and `agreement` are evaluated when the contract is created.

@@ -120,9 +120,14 @@ exceptionTest = do
 
 ## Key points
 
+### Throw & catch
+
 - `exception Name with fields where message expr` declares a throwable/catchable type.
 - `throw e` inside `Update` aborts the current sub-transaction and propagates the exception up.
 - `try do ... catch (ExType fields) -> ...` catches a specific exception type. Multiple `catch` clauses are tried top-to-bottom; the first match wins.
 - When an exception is caught, all ledger changes (creates, archives) made inside the `try` block are rolled back. The transaction continues from the `catch` clause.
+
+### Error types
+
 - Built-in exceptions: `PreconditionFailed` (from `ensure` failure), `ArithmeticError` (divide by zero, overflow).
-- Errors that are not exceptions — such as exercising an archived contract — still abort the entire transaction and cannot be caught.
+- Errors that are not exceptions: such as exercising an archived contract, still abort the entire transaction and cannot be caught.

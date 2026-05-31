@@ -90,9 +90,17 @@ tokenTest = do
 
 ## Key points
 
+### Token basics
+
 - Each token is an individual contract. Total supply is the sum of all active token contracts with the same `issuer` and `symbol`.
 - There is no global mapping. Querying all tokens of a given type requires `query @Token party` and filtering by `symbol`.
+
+### Operations
+
 - `Merge` uses `archive otherId` explicitly to destroy the second token before creating the combined one.
-- `Burn` is a consuming choice controlled by the issuer — it removes the token from circulation without creating a replacement.
+- `Burn` is a consuming choice controlled by the issuer: it removes the token from circulation without creating a replacement.
+
+### Access control
+
 - The `key` here includes `owner` so that each `(issuer, symbol, owner)` triple is unique. If you want one canonical contract per symbol, remove `owner` from the key and use `Merge` to consolidate.
 - Conserving total supply must be enforced by the contract logic (`Split` and `Merge` preserve totals via `assert`). The runtime does not enforce conservation automatically.

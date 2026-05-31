@@ -1,6 +1,6 @@
 ---
 title: "Choices"
-description: "A `choice` is the only mechanism by which a contract can be acted upon. Choices run inside the `Update` monad — a sequenced set of ledger actions that execute atomically. By default, exercising a choice archives the contract. The `nonconsuming` keyword prevents archival."
+description: "A `choice` is the only mechanism by which a contract can be acted upon. Choices run inside the `Update` monad: a sequenced set of ledger actions that execute atomically. By default, exercising a choice archives the contract. The `nonconsuming` keyword prevents archival."
 ---
 
 ```daml
@@ -65,9 +65,17 @@ template Token
 
 ## Key points
 
+### Choice structure
+
 - A choice name must start with a capital letter and must be unique across the entire project (not just the template).
 - The choice body is a `do` block of type `Update a`, where `a` is the declared return type.
 - `this` refers to the current contract's field values. `self` is the `ContractId` of the current contract.
-- `nonconsuming` allows a choice to be exercised repeatedly without archiving the contract.
-- Multiple controllers form a conjunction: all must authorize. To require any one of several parties, use separate choices.
 - The `do` block can contain: `create`, `exercise`, `fetch`, `archive`, `assert`, `assertMsg`, `getTime`, `return`, and `let`.
+
+### Consuming vs nonconsuming
+
+- `nonconsuming` allows a choice to be exercised repeatedly without archiving the contract.
+
+### Controller rules
+
+- Multiple controllers form a conjunction: all must authorize. To require any one of several parties, use separate choices.

@@ -112,9 +112,17 @@ interfaceTest = do
 
 ## Key points
 
-- Every interface must declare a `viewtype` — a record type returned when the interface is fetched.
+### Interface basics
+
+- Every interface must declare a `viewtype`: a record type returned when the interface is fetched.
 - The `interface instance T for Template` block must implement every method and the `view` function.
+
+### Viewtype & methods
+
 - `toInterfaceContractId @I cid` upcasts a `ContractId Template` to a `ContractId I`.
 - `fromInterfaceContractId @T icid` attempts a downcast to a specific template; it returns `Optional (ContractId T)`.
+
+### Polymorphism
+
 - Interface choices are defined on the interface and dispatch to the template's `interface instance` implementation at runtime.
 - Interfaces require DAML-LF 1.15 or higher (the default in SDK 2.x).

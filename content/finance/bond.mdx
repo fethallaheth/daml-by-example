@@ -123,9 +123,17 @@ bondTest = do
 
 ## Key points
 
+### Date utilities
+
 - `DA.Date` exports `date y m d : Year -> Month -> Day -> Date` for constructing date literals. `Month` is an enum: `Jan`, `Feb`, ..., `Dec`.
-- `nonconsuming choice PayCoupon` keeps the bond alive after payment — coupon payments happen multiple times over the bond's life.
+
+### Bond lifecycle
+
+- `nonconsuming choice PayCoupon` keeps the bond alive after payment: coupon payments happen multiple times over the bond's life.
 - `Mature` is consuming: it archives the bond and creates a `MaturityReceipt`, modelling redemption.
+
+### Production notes
+
 - The `isin` key ensures only one active bond contract per issuer per instrument code.
 - In production DAML Finance, `CouponPayment` would be replaced by an actual settlement of a cash instrument. This example uses a receipt pattern for clarity.
 - `couponRate` is stored on the contract so the issuer can compute payment amounts off-chain; the amount is passed into `PayCoupon` as an argument.

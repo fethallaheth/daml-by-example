@@ -108,8 +108,13 @@ escrowTest = do
 
 ## Key points
 
+### Authorization
+
 - `submitMultiParty [party1, party2, ...] do` submits a transaction authorized by all listed parties simultaneously. This is only available in Script (for testing); in production, multi-signatory creation uses the Propose/Accept pattern.
-- A three-party contract means no single party can unilaterally archive it — a useful property for neutral custody.
+- A three-party contract means no single party can unilaterally archive it: a useful property for neutral custody.
+
+### Design patterns
+
 - `nonconsuming` on `RaiseDispute` allows the buyer to file a dispute without destroying the escrow.
 - Embedding a named record (`EscrowParties`) rather than repeating party fields keeps templates clean when many parties share a logical role.
 - `Receipt` has `from` and `to` as signatories, so it is a bilateral acknowledgement of the outcome.

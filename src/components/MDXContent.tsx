@@ -35,6 +35,7 @@ const components = {
         href={href}
         {...(isInternal ? {} : { target: "_blank", rel: "noopener noreferrer" })}
         className="text-accent underline underline-offset-2 decoration-accent/30 hover:decoration-accent transition-colors"
+        {...(isInternal ? {} : { "aria-label": `${children} (opens in new tab)` })}
         {...props}
       >
         {children}
@@ -66,7 +67,7 @@ const components = {
   ),
   blockquote: ({ children, ...props }: React.ComponentPropsWithoutRef<"blockquote">) => (
     <blockquote
-      className="my-6 border-l-4 border-neutral-300 bg-neutral-50 px-4 py-2 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400"
+      className="my-6 border-l-2 border-neutral-300 bg-neutral-50 px-4 py-2 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400"
       {...props}
     >
       {children}

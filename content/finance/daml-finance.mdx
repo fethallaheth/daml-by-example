@@ -87,9 +87,17 @@ module DamlFinanceIntro where
 
 ## Key points
 
+### Getting started
+
 - DAML Finance is on GitHub at `github.com/digital-asset/daml-finance` and has full documentation at `docs.daml.com/daml-finance/index.html`.
 - The library is interface-first: your application code depends on the interfaces (stable API), not the concrete implementations (can be swapped).
+
+### Core concepts
+
 - `InstrumentKey` `(depository, issuer, id, version)` is the canonical identifier for a financial instrument. A version change (e.g. after a coupon payment updates the instrument) creates a new `Instrument` contract while the key's `id` stays constant.
 - Settlement uses a Delivery vs Payment (DvP) model: a `Batch` contains multiple `Instruction` contracts that all settle atomically or not at all.
-- For new projects, prefer DAML Finance interfaces over hand-rolling your own `Token` or `Bond` templates — the interfaces are tested, audited, and interoperable.
+
+### Recommendations
+
+- For new projects, prefer DAML Finance interfaces over hand-rolling your own `Token` or `Bond` templates: the interfaces are tested, audited, and interoperable.
 - The library targets DAML SDK 2.x and requires LF 1.15+.

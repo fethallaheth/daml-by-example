@@ -80,9 +80,17 @@ keyDemo = do
 
 ## Key points
 
+### Key basics
+
 - The `key` expression can be any expression involving the template's fields, as long as the resulting type includes at least one `maintainer` party.
 - The `maintainer` must be a signatory (or a subset of the signatories) of the template.
+
+### Key operations
+
 - `fetchByKey @Template key` returns `(ContractId T, T)` and fails if the key does not exist.
 - `lookupByKey @Template key` returns `Optional (ContractId T)` and does not fail if the key is absent.
 - `exerciseByKey @Template key ChoiceName with ...` combines lookup and exercise in one step.
-- Contract key uniqueness is enforced by the ledger — attempting to create a second active contract with the same key is rejected.
+
+### Uniqueness
+
+- Contract key uniqueness is enforced by the ledger: attempting to create a second active contract with the same key is rejected.

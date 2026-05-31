@@ -61,9 +61,20 @@ assetTest = do
 
 ## Key points
 
+### Parties
+
 - `allocateParty "Name" : Script Party` creates a party on the sandbox. Party names are strings for human readability.
+
+### Transactions
+
 - `submit party do createCmd T with ...` is a transaction: party creates contract T.
 - `createCmd` and `exerciseCmd` are the Script variants of `create` and `exercise`. They are only valid inside a `submit` block.
+
+### Queries
+
 - `queryContractId party cid : Script (Optional T)` reads the party's view of the ledger. A party can only query contracts visible to them.
+
+### Execution model
+
 - Scripts run sequentially. Each `submit` is committed before the next line executes.
-- The `Script` monad is separate from the `Update` monad. You cannot use `Update` functions like `create` directly inside `do` at the Script level — they must be inside a `submit`.
+- The `Script` monad is separate from the `Update` monad. You cannot use `Update` functions like `create` directly inside `do` at the Script level: they must be inside a `submit`.

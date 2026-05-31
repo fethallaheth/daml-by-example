@@ -1,6 +1,6 @@
 ---
 title: "Querying State"
-description: "Daml Script provides several functions to read the active contract set from a party's perspective. These are not ledger transactions — they are read-only queries that return the visible state at the current point in the script."
+description: "Daml Script provides several functions to read the active contract set from a party's perspective. These are not ledger transactions: they are read-only queries that return the visible state at the current point in the script."
 ---
 
 ```daml
@@ -76,9 +76,14 @@ queryDemo = do
 
 ## Key points
 
+### Query functions
+
 - `queryContractId party cid : Script (Optional T)` — fetch one contract by its ID from the party's view.
 - `queryContractKey @T party key : Script (Optional (ContractId T, T))` — fetch by key from the party's view.
 - `query @T party : Script [(ContractId T, T)]` — fetch all active contracts of type `T` visible to the party.
 - Query functions are read-only. They do not create transactions and do not appear on the ledger.
 - In a test, `query` is useful for asserting the total number of active contracts of a given type.
-- `@T` is the type application syntax — it tells the compiler which template type you are querying when it cannot be inferred.
+
+### Type applications
+
+- `@T` is the type application syntax: it tells the compiler which template type you are querying when it cannot be inferred.

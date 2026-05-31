@@ -1,6 +1,6 @@
 ---
 title: "submitMustFail"
-description: "`submitMustFail` asserts that a transaction is rejected by the ledger. It is the negative testing primitive in Daml Script — the equivalent of expecting a revert. If the submission succeeds unexpectedly, the script itself fails."
+description: "`submitMustFail` asserts that a transaction is rejected by the ledger. It is the negative testing primitive in Daml Script: the equivalent of expecting a revert. If the submission succeeds unexpectedly, the script itself fails."
 ---
 
 ```daml
@@ -58,9 +58,17 @@ vaultTest = do
 
 ## Key points
 
+### Behavior
+
 - `submitMustFail party do ...` succeeds (passes) only if the ledger rejects the transaction.
 - If the ledger accepts a `submitMustFail` submission, the script fails immediately.
+
+### Use cases
+
 - Use `submitMustFail` to test: authorization violations (wrong controller), `ensure` failures, `assert`/`assertMsg` failures, and stale `ContractId` references.
-- `submitMustFail` does not reveal the error type — it only asserts failure. To inspect the specific failure, use `trySubmit`.
+- `submitMustFail` does not reveal the error type: it only asserts failure. To inspect the specific failure, use `trySubmit`.
 - Testing both happy paths and failure paths is essential. The ledger silently rejects invalid transactions in production; scripts make the expectation explicit.
+
+### Syntax
+
 - Semicolons (`;`) can separate record fields on one line: `with owner = alice; balance = 100.0`.

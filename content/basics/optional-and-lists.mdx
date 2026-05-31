@@ -86,9 +86,14 @@ upperNames = map (\n -> n) names   -- identity; replace with DA.Text.toUpper in 
 
 ## Key points
 
+### Optional
+
 - `Optional a` has two constructors: `Some a` and `None`. There is no null and no runtime null-pointer error.
-- Always pattern match or use `fromOptional`/`optional` to extract a value — never assume `Some`.
-- Lists in DAML are singly-linked and immutable. `::` prepends; `++` concatenates two lists.
+- Always pattern match or use `fromOptional`/`optional` to extract a value: never assume `Some`.
 - `DA.Optional` exports: `fromOptional`, `isSome`, `isNone`, `mapOptional`, `catOptionals`, `optionalToList`, `listToOptional`.
+
+### Lists
+
+- Lists in DAML are singly-linked and immutable. `::` prepends; `++` concatenates two lists.
 - `DA.List` exports: `sortBy`, `groupBy`, `dedup`, `dedupOn`, `head`, `last`, `tail`, `take`, `drop`, `find`, `partition`.
 - `length`, `reverse`, `zip`, `unzip`, `concat`, `concatMap` are available without any import.

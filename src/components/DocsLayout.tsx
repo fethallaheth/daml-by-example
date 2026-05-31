@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Menu, X, ArrowRight } from "lucide-react"
+import { Menu, X, ArrowLeft, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { Sidebar } from "./Sidebar"
 import { TableOfContents } from "./TableOfContents"
@@ -25,21 +25,18 @@ export function DocsLayout({
   tocItems,
   breadcrumbItems,
 }: DocsLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  const nextPage = (() => {
-    const allItems: { path: string; title: string }[] = []
-    for (const section of sections) {
-      for (const item of section.items) {
-        allItems.push({ path: `/${section.key}/${item.slug}`, title: item.title })
-      }
+  const allItems: { path: string; title: string }[] = []
+  for (const section of sections) {
+    for (const item of section.items) {
+      allItems.push({ path: `/${section.key}/${item.slug}`, title: item.title })
     }
-    const idx = allItems.findIndex((p) => p.path === currentPath)
-    if (idx !== -1 && idx < allItems.length - 1) {
-      return allItems[idx + 1]
-    }
-    return null
-  })()
+  }
+
+  const idx = allItems.findIndex((p) => p.path === currentPath)
+  const prevPage = idx > 0 ? allItems[idx - 1] : null
+  const nextPage = idx !== -1 && idx < allItems.length - 1 ? allItems[idx + 1] : null
 
   return (
     <div className="flex flex-col bg-white dark:bg-neutral-950" style={{ minHeight: '100dvh' }}>
@@ -52,8 +49,8 @@ export function DocsLayout({
       />
 
       <div
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-neutral-200 bg-white transition-transform duration-300 dark:border-neutral-800 dark:bg-neutral-950 max-lg:max-w-[85vw] lg:z-30 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:invisible'
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-neutral-200 bg-white transition-transform duration-300 dark:border-neutral-800 dark:bg-neutral-950 max-lg:max-w-[85vw] lg:z-30 lg:translate-x-0 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex h-14 sm:h-16 shrink-0 items-center justify-between border-b border-neutral-200 px-4 dark:border-neutral-800">
@@ -62,7 +59,7 @@ export function DocsLayout({
           </Link>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="rounded-md p-1.5 text-neutral-400 transition-colors hover:text-accent active:scale-95"
+            className="rounded-md p-1.5 text-neutral-400 transition-colors hover:text-accent dark:text-neutral-400 lg:hidden"
             aria-label="Close sidebar"
           >
             <X className="h-5 w-5" />
@@ -74,17 +71,15 @@ export function DocsLayout({
       </div>
 
       <div
-        className={`flex flex-1 flex-col transition-[padding] duration-300 ${
-          sidebarOpen ? 'lg:pl-72' : 'lg:pl-0'
-        }`}
+        className={`flex flex-1 flex-col transition-[padding] duration-300 lg:pl-72`}
       >
-        <header className="sticky top-0 z-20 flex h-14 sm:h-16 shrink-0 items-center border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-neutral-800 dark:bg-neutral-950/95 dark:supports-[backdrop-filter]:bg-neutral-950/80">
+        <header className="sticky top-0 z-30 flex h-14 sm:h-16 shrink-0 items-center border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-neutral-800 dark:bg-neutral-950/95 dark:supports-[backdrop-filter]:bg-neutral-950/80">
           <div className="flex w-full items-center">
             <div className="flex w-auto shrink-0 items-center justify-center pl-2 pr-1 sm:w-16 sm:px-4">
               {!sidebarOpen && (
                 <button
                   onClick={() => setSidebarOpen(true)}
-                  className="rounded-md p-1.5 text-neutral-400 transition-colors hover:text-accent active:scale-95"
+                  className="rounded-md p-1.5 text-neutral-400 transition-colors hover:text-accent dark:text-neutral-400 lg:hidden"
                   aria-label="Open sidebar"
                 >
                   <Menu className="h-5 w-5" />
@@ -106,22 +101,41 @@ export function DocsLayout({
             <div className="min-w-0 max-w-5xl flex-1">
               <Breadcrumb items={breadcrumbItems} />
               <article>
+                {(breadcrumbItems.length > 0) && (
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 mb-6">
+                    {breadcrumbItems[breadcrumbItems.length - 1]?.label}
+                  </h1>
+                )}
                 {children}
               </article>
-              {nextPage && (
-                <Link
-                  href={nextPage.path}
-                  className="mt-8 flex items-center justify-between rounded-lg border border-neutral-200 p-4 transition-all hover:border-accent hover:bg-accent-surface hover:-translate-y-0.5 dark:border-neutral-800 dark:hover:border-accent dark:hover:bg-accent-surface"
-                >
-                  <div>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Next</span>
-                    <p className="text-base font-medium text-neutral-900 dark:text-neutral-100">{nextPage.title}</p>
-                  </div>
-                  <ArrowRight className="h-5 w-5 shrink-0 text-accent" />
-                </Link>
-              )}
+              <div className="mt-8 flex gap-4">
+                {prevPage && (
+                  <Link
+                    href={prevPage.path}
+                    className="flex flex-1 items-center gap-3 rounded-lg border border-neutral-200 p-4 transition-colors hover:border-accent hover:bg-accent-surface dark:border-neutral-800 dark:hover:border-accent dark:hover:bg-accent-surface"
+                  >
+                    <ArrowLeft className="h-5 w-5 shrink-0 text-accent" />
+                    <div>
+                      <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Previous</span>
+                      <p className="text-base font-medium text-neutral-900 dark:text-neutral-100">{prevPage.title}</p>
+                    </div>
+                  </Link>
+                )}
+                {nextPage && (
+                  <Link
+                    href={nextPage.path}
+                    className="flex flex-1 items-center justify-end gap-3 rounded-lg border border-neutral-200 p-4 text-right transition-colors hover:border-accent hover:bg-accent-surface dark:border-neutral-800 dark:hover:border-accent dark:hover:bg-accent-surface"
+                  >
+                    <div>
+                      <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Next</span>
+                      <p className="text-base font-medium text-neutral-900 dark:text-neutral-100">{nextPage.title}</p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 shrink-0 text-accent" />
+                  </Link>
+                )}
+              </div>
             </div>
-            <aside className="hidden xl:block w-56 2xl:w-60 shrink-0 self-start sticky top-24">
+            <aside className="hidden xl:block w-56 2xl:w-60 shrink-0 self-start sticky top-20">
               <TableOfContents items={tocItems} />
             </aside>
           </div>

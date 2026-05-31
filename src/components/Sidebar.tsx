@@ -15,11 +15,6 @@ interface SidebarProps {
 export function Sidebar({ sections, currentPath }: SidebarProps) {
   return (
     <nav aria-label="Documentation" className="px-4 py-6">
-      <div className="mb-6 px-2">
-        <Link href="/" className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-          DAML By Example
-        </Link>
-      </div>
       {sections.map((section) => (
         <SidebarSection key={section.key} section={section} currentPath={currentPath} />
       ))}
@@ -54,7 +49,7 @@ function SidebarSection({ section, currentPath }: { section: SidebarSection; cur
                   className={cn(
                     "block rounded-md px-3 py-2 text-sm transition-colors",
                     isActive
-                      ? "bg-accent-surface font-semibold text-accent shadow-sm dark:bg-accent-surface dark:text-accent"
+                      ? "bg-accent-surface font-semibold text-accent dark:bg-accent-surface dark:text-accent"
                       : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
                   )}
                 >

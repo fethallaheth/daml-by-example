@@ -32,6 +32,7 @@ export function SearchDialog() {
   const [loading, setLoading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const dialogRef = useRef<HTMLDivElement>(null)
+  const closeRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -56,6 +57,34 @@ export function SearchDialog() {
       setQuery("")
       setResults([])
     }
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return
+      const dialog = dialogRef.current
+      if (!dialog) return
+      const focusable = dialog.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
+    document.addEventListener("keydown", handleTab)
+    return () => document.removeEventListener("keydown", handleTab)
   }, [open])
 
   const handleSearch = useCallback(async (value: string) => {
@@ -103,7 +132,8 @@ export function SearchDialog() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-500 transition-all hover:border-accent/30 hover:bg-accent-surface hover:text-accent active:scale-95 sm:h-9 sm:w-9 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400 dark:hover:border-accent/30 dark:hover:bg-accent-surface dark:hover:text-accent"
+        aria-haspopup="dialog"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-500 transition-colors hover:bg-accent-surface hover:text-accent sm:h-9 sm:w-9 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400 dark:hover:bg-accent-surface dark:hover:text-accent"
       >
         <Search className="h-4 w-4" />
         <span className="sr-only">Search</span>
@@ -131,7 +161,8 @@ export function SearchDialog() {
               </kbd>
               <button
                 onClick={() => setOpen(false)}
-                className="ml-2 rounded-md p-1 text-neutral-400 transition-colors hover:text-neutral-600 sm:hidden"
+                className="ml-2 rounded-md p-1 text-neutral-400 transition-colors hover:text-neutral-600 sm:hidden dark:hover:text-neutral-300"
+                ref={closeRef}
                 aria-label="Close search"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -161,7 +192,7 @@ export function SearchDialog() {
                         </span>
                         {result.excerpt && (
                           <span
-                            className="mt-0.5 line-clamp-1 text-neutral-500"
+                            className="mt-0.5 line-clamp-1 text-neutral-500 dark:text-neutral-400"
                             dangerouslySetInnerHTML={{ __html: result.excerpt }}
                           />
                         )}

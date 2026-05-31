@@ -1,6 +1,6 @@
 ---
 title: "IOU"
-description: "An IOU (I Owe You) is the canonical DAML contract representing a debt acknowledgement between two parties. It demonstrates transfer, split, merge, and settlement — the fundamental lifecycle operations for a fungible obligation."
+description: "An IOU (I Owe You) is the canonical DAML contract representing a debt acknowledgement between two parties. It demonstrates transfer, split, merge, and settlement: the fundamental lifecycle operations for a fungible obligation."
 ---
 
 ```daml
@@ -90,9 +90,17 @@ iouTest = do
 
 ## Key points
 
-- `fetch otherId` reads another contract's data inside a choice body without archiving it.
-- `archive cid` explicitly archives a contract inside a choice. It is a consuming action — after this call, `cid` is stale.
-- Nested record update: `cash with amount = x` updates the `amount` field of the `cash` record.
+### Core operations
+
 - `Split` returns a tuple of two `ContractId`s. Tuples are unpacked with pattern matching: `(part1, part2) <- ...`.
-- The UTXO model guarantees totals: Split preserves `splitAmount + remainder == original`. This is enforced by `assert`, not by the runtime automatically.
 - `Settle` (consuming, returns `()`) is the canonical pattern for removing a completed obligation from the ledger.
+
+### State management
+
+- `fetch otherId` reads another contract's data inside a choice body without archiving it.
+- `archive cid` explicitly archives a contract inside a choice. It is a consuming action: after this call, `cid` is stale.
+- Nested record update: `cash with amount = x` updates the `amount` field of the `cash` record.
+
+### UTXO model
+
+- The UTXO model guarantees totals: Split preserves `splitAmount + remainder == original`. This is enforced by `assert`, not by the runtime automatically.

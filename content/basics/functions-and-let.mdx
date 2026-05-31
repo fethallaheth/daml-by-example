@@ -1,6 +1,6 @@
 ---
 title: "Functions and Let"
-description: "DAML functions are pure — they take inputs and return outputs with no side effects. `let`/`in` binds local names within an expression. Guards (`|`) replace nested `if/else` chains. Lambdas use backslash syntax. The standard list combinators `map`, `filter`, and `foldl` replace loops."
+description: "DAML functions are pure: they take inputs and return outputs with no side effects. `let`/`in` binds local names within an expression. Guards (`|`) replace nested `if/else` chains. Lambdas use backslash syntax. The standard list combinators `map`, `filter`, and `foldl` replace loops."
 ---
 
 ```daml
@@ -77,9 +77,14 @@ total xs = foldl (+) 0.0 xs
 
 ## Key points
 
+### Functions
+
 - Functions are curried: `add : Int -> Int -> Int` is a function that returns a function. `add 5` is valid and returns an `Int -> Int`.
-- `let` bindings inside a `do` block do not use `in` — only top-level `let/in` needs it.
-- Guards are evaluated top-to-bottom; the first matching guard wins.
 - There are no `for`, `while`, or `do/while` loops. Iteration uses `map`, `filter`, `foldl`, or recursion.
 - Lambdas are first-class values and can be passed to and returned from functions.
+
+### Control flow
+
+- `let` bindings inside a `do` block do not use `in` — only top-level `let/in` needs it.
+- Guards are evaluated top-to-bottom; the first matching guard wins.
 - `show : a -> Text` converts any value with a `Show` instance to its string representation.

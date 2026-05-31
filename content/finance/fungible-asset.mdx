@@ -1,6 +1,6 @@
 ---
 title: "Fungible Asset"
-description: "A fungible asset is one where units are interchangeable — any 10 USD is equivalent to any other 10 USD. This template demonstrates the full suite of fungibility operations: split, merge, and transfer, with strict conservation of quantity enforced by contract logic."
+description: "A fungible asset is one where units are interchangeable: any 10 USD is equivalent to any other 10 USD. This template demonstrates the full suite of fungibility operations: split, merge, and transfer, with strict conservation of quantity enforced by contract logic."
 ---
 
 ```daml
@@ -97,9 +97,17 @@ fungibleTest = do
 
 ## Key points
 
-- `forA : [a] -> (a -> Update b) -> Update [b]` traverses a list inside the `Update` monad — the DAML equivalent of `for`/`forEach`.
+### Utility functions
+
+- `forA : [a] -> (a -> Update b) -> Update [b]` traverses a list inside the `Update` monad: the DAML equivalent of `for`/`forEach`.
 - `sum : [Decimal] -> Decimal` sums a list (available without import for numeric types).
 - The `Merge` choice takes a list of `ContractId`s, making it efficient to consolidate many small positions in one transaction.
+
+### Design patterns
+
 - Both `depository` and `issuer` are signatories, reflecting real-world custody relationships where the custodian co-signs issuance.
 - Conservation of quantity must be enforced in `Split` (`a + b = original`) and `Merge` (`original + sum(others)`). The ledger does not do this automatically.
+
+### Foundation
+
 - This pattern is the foundation of the `daml-finance` library's `Fungible` interface (`Daml.Finance.Interface.Holding.Fungible`).

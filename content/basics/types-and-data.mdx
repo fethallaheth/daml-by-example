@@ -68,9 +68,14 @@ data Currency = USD | EUR | GBP | JPY
 
 ## Key points
 
+### Records & variants
+
 - `data` defines both records (one constructor, fields) and variants (multiple constructors).
 - Record update syntax (`with field = newValue`) creates a new value without mutating the original.
-- `Optional a` is DAML's null-safety type: `Some x` or `None`. There is no null.
-- `Decimal` is the correct type for monetary and quantity values — never `Double`.
-- `deriving (Eq, Show)` generates `==`, `/=`, and `show` automatically.
 - All composite types must be passed as template parameters; they cannot be stored as global state.
+
+### Safety & display
+
+- `Optional a` is DAML's null-safety type: `Some x` or `None`. There is no null.
+- `Decimal` is the correct type for monetary and quantity values: never `Double`.
+- `deriving (Eq, Show)` generates `==`, `/=`, and `show` automatically.
