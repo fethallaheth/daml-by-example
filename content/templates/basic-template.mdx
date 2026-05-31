@@ -1,0 +1,73 @@
+---
+title: "Basic Template"
+description: "Understanding DAML template structure"
+---
+
+# Basic Template
+
+Templates are the foundation of DAML smart contracts.
+
+## Template Structure
+
+```daml title="Asset.daml"
+daml 2.0
+module Asset
+
+template Asset
+  with
+    issuer: Party
+    owner: Party
+    amount: Decimal
+  where
+    signatory issuer, owner
+
+    choice Transfer: ContractId Asset
+      with
+        newOwner: Party
+      controller owner
+      do
+        create this with owner = newOwner
+
+    choice Split: (ContractId Asset, ContractId Asset)
+      with
+        splitAmount: Decimal
+      controller owner
+      do
+        remaining <- create this with amount = amount - splitAmount
+        split <- create this with amount = splitAmount
+        return (remaining, split)
+```
+
+## Template Fields
+
+| Field    | Type    | Description |
+|----------|---------|-------------|
+| issuer   | Party   | The party who issued the asset |
+| owner    | Party   | The current owner |
+| amount   | Decimal | The quantity of the asset |
+
+## Observers
+
+You can add `observer` clauses to give non-signatory parties visibility:
+
+```daml
+template PublicAsset
+  with
+    issuer: Party
+    owner: Party
+    regulator: Party
+  where
+    signatory issuer, owner
+    observer regulator
+```
+
+## Maintenance Choices
+
+Add a `merge` or `archive` choice for lifecycle management:
+
+```daml
+    choice Archive: ()
+      controller owner
+      do
+        archive self
+```

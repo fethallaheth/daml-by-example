@@ -1,0 +1,60 @@
+---
+title: "Hello, World!"
+description: "Your first DAML smart contract"
+---
+
+# Hello, World!
+
+Welcome to DAML By Example. This is your first DAML smart contract.
+
+## The Simplest Contract
+
+```daml title="HelloWorld.daml"
+daml 2.0
+module HelloWorld
+
+template Hello
+  with
+    owner: Party
+  where
+    signatory owner
+
+    choice SayHello: ()
+      controller owner
+      do
+        debug "Hello, World!"
+        return ()
+```
+
+## Breaking It Down
+
+Let's understand each part:
+
+**Module declaration:** Every DAML file starts with `daml 2.0` and a `module` declaration.
+
+**Template definition:** The `template` keyword defines a contract template.
+
+**Template parameters:** `with` introduces the template's parameters. Here, `owner` is a `Party`.
+
+**Choices:** `choice` defines an action that can be exercised on the contract. `SayHello` is a choice with return type `()`.
+
+## Running the Contract
+
+To test this contract:
+
+```bash
+daml start
+```
+
+Then in another terminal:
+
+```bash
+daml script --dar .daml/dist/hello-world-0.0.1.dar
+```
+
+## Key Concepts
+
+- **Party** represents a participant in the ledger
+- **Signatory** is the party that must authorize the contract creation
+- **Choice** is an operation that can be performed on an active contract
+- **Controller** is the party authorized to exercise the choice

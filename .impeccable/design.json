@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-31T00:00:00.000Z",
+  "title": "Design System: DAML By Example",
+  "extensions": {
+    "colorMeta": {
+      "bg": { "role": "neutral", "displayName": "Paper", "canonical": "oklch(100% 0 0)", "tonalRamp": ["oklch(95% 0.002 90)", "oklch(90% 0.003 90)", "oklch(80% 0.004 90)", "oklch(65% 0.005 90)", "oklch(50% 0.005 90)", "oklch(35% 0.006 90)", "oklch(20% 0.006 90)", "oklch(10% 0.006 90)"] },
+      "bg-dark": { "role": "neutral", "displayName": "Paper Dark", "canonical": "oklch(3% 0 0)", "tonalRamp": ["oklch(95% 0.002 90)", "oklch(90% 0.003 90)", "oklch(80% 0.004 90)", "oklch(65% 0.005 90)", "oklch(50% 0.005 90)", "oklch(35% 0.006 90)", "oklch(20% 0.006 90)", "oklch(10% 0.006 90)"] },
+      "border": { "role": "neutral", "displayName": "Border Ash", "canonical": "oklch(90% 0.003 90)", "tonalRamp": ["oklch(95% 0.002 90)", "oklch(90% 0.003 90)", "oklch(80% 0.004 90)", "oklch(65% 0.005 90)", "oklch(50% 0.005 90)", "oklch(35% 0.006 90)", "oklch(20% 0.006 90)", "oklch(10% 0.006 90)"] },
+      "surface-raised": { "role": "neutral", "displayName": "Cold Ash", "canonical": "oklch(98% 0.002 90)", "tonalRamp": ["oklch(98% 0.002 90)", "oklch(93% 0.003 90)", "oklch(83% 0.004 90)", "oklch(68% 0.005 90)", "oklch(53% 0.005 90)", "oklch(38% 0.005 90)", "oklch(23% 0.005 90)", "oklch(12% 0.005 90)"] },
+      "surface-hover": { "role": "neutral", "displayName": "Hover Ash", "canonical": "oklch(96% 0.004 90)", "tonalRamp": ["oklch(96% 0.004 90)", "oklch(91% 0.004 90)", "oklch(81% 0.005 90)", "oklch(66% 0.005 90)", "oklch(51% 0.005 90)", "oklch(36% 0.005 90)", "oklch(21% 0.005 90)", "oklch(10% 0.006 90)"] },
+      "text-body": { "role": "neutral", "displayName": "Body Ink", "canonical": "oklch(30% 0.005 90)", "tonalRamp": [] },
+      "text-muted": { "role": "neutral", "displayName": "Muted Ink", "canonical": "oklch(55% 0.005 90)", "tonalRamp": [] },
+      "accent-bg": { "role": "primary", "displayName": "Accent Fill", "canonical": "oklch(8% 0.005 90)", "tonalRamp": ["oklch(95% 0.005 90)", "oklch(85% 0.005 90)", "oklch(65% 0.006 90)", "oklch(45% 0.006 90)", "oklch(30% 0.006 90)", "oklch(18% 0.006 90)", "oklch(10% 0.006 90)", "oklch(5% 0.005 90)"] }
+    },
+    "typographyMeta": {
+      "body": { "displayName": "Body", "purpose": "All prose content. 65-75ch max line length." },
+      "h1": { "displayName": "Heading 1", "purpose": "Page titles. Used once per page." },
+      "h2": { "displayName": "Heading 2", "purpose": "Section headings with border-bottom separator." },
+      "h3": { "displayName": "Heading 3", "purpose": "Sub-section headings." },
+      "code": { "displayName": "Code", "purpose": "Inline code and code block content." },
+      "label": { "displayName": "Label", "purpose": "Sidebar section headers, TOC heading, code filenames." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-default", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Standard state transition easing. Used for all hover and focus transitions." },
+      { "name": "duration-hover", "value": "150ms", "purpose": "Hover/focus state transition duration." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary CTA Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Solid dark button used for the 'Get Started' CTA on the landing page.",
+      "html": "<button class=\"ds-btn-primary\">Get Started</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 16px; background: #171717; color: #ffffff; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 500; line-height: 1; border: none; border-radius: 6px; cursor: pointer; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-primary:hover { background: #0a0a0b; } .ds-btn-primary:focus-visible { outline: 2px solid #737373; outline-offset: 2px; } .dark .ds-btn-primary { background: #f5f5f5; color: #171717; } .dark .ds-btn-primary:hover { background: #e5e5e5; }"
+    },
+    {
+      "name": "Icon Button",
+      "kind": "button",
+      "refersTo": "button-icon",
+      "description": "Square icon button for the header toolbar (theme toggle, search, mobile menu).",
+      "html": "<button class=\"ds-btn-icon\" aria-label=\"Toggle theme\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"5\"/><line x1=\"12\" y1=\"1\" x2=\"12\" y2=\"3\"/><line x1=\"12\" y1=\"21\" x2=\"12\" y2=\"23\"/><line x1=\"4.22\" y1=\"4.22\" x2=\"5.64\" y2=\"5.64\"/><line x1=\"18.36\" y1=\"18.36\" x2=\"19.78\" y2=\"19.78\"/><line x1=\"1\" y1=\"12\" x2=\"3\" y2=\"12\"/><line x1=\"21\" y1=\"12\" x2=\"23\" y2=\"12\"/><line x1=\"4.22\" y1=\"19.78\" x2=\"5.64\" y2=\"18.36\"/><line x1=\"18.36\" y1=\"5.64\" x2=\"19.78\" y2=\"4.22\"/></svg></button>",
+      "css": ".ds-btn-icon { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: transparent; color: #737373; border: 1px solid #e5e5e5; border-radius: 6px; cursor: pointer; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-icon:hover { background: #f5f5f5; } .ds-btn-icon:focus-visible { outline: 2px solid #737373; outline-offset: 2px; } .dark .ds-btn-icon { color: #737373; border-color: #262626; } .dark .ds-btn-icon:hover { background: #262626; }"
+    },
+    {
+      "name": "Sidebar Link",
+      "kind": "nav",
+      "refersTo": "sidebar-item-default",
+      "description": "Navigation link in the documentation sidebar. Active state uses a filled background.",
+      "html": "<nav style=\"width: 256px; padding: 0 16px;\"><div style=\"margin-bottom: 16px;\"><button style=\"display: flex; width: 100%; align-items: center; gap: 6px; padding: 6px 8px; font-family: Inter, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #737373; background: none; border: none; border-radius: 6px; cursor: pointer;\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><polyline points=\"9 18 15 12 9 6\"/></svg>Basics</button><ul style=\"list-style: none; margin: 4px 0 0; padding: 0;\"><li><a href=\"#\" style=\"display: block; padding: 6px 12px; border-radius: 6px; font-family: Inter, sans-serif; font-size: 14px; color: #737373; text-decoration: none; transition: background 150ms;\">Hello, World!</a></li><li><a href=\"#\" style=\"display: block; padding: 6px 12px; border-radius: 6px; font-family: Inter, sans-serif; font-size: 14px; font-weight: 500; color: #0a0a0b; background: #f5f5f5; text-decoration: none;\">Basic Template</a></li></ul></div></nav>",
+      "css": ".dark nav { background: #0a0a0b; } .dark a { color: #a3a3a3; } .dark a[style*='background'] { background: #262626 !important; color: #fafafa !important; } .dark button { color: #737373; }"
+    },
+    {
+      "name": "Code Block",
+      "kind": "custom",
+      "refersTo": "code-block",
+      "description": "Code block with optional filename header and copy button.",
+      "html": "<div class=\"ds-codeblock\"><div class=\"ds-codeblock-header\"><span class=\"ds-codeblock-filename\">HelloWorld.daml</span></div><div class=\"ds-codeblock-body\"><pre style=\"margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.6; color: #404040;\"><code><span style=\"color: #0550AE;\">daml</span> <span style=\"color: #0550AE;\">2.0</span>\n<span style=\"color: #0550AE;\">module</span> <span style=\"color: #0550AE;\">HelloWorld</span>\n\n<span style=\"color: #0550AE;\">template</span> <span style=\"color: #0550AE;\">Hello</span>\n  <span style=\"color: #0550AE;\">with</span>\n    <span style=\"color: #0550AE;\">owner</span>: <span style=\"color: #0550AE;\">Party</span>\n  <span style=\"color: #0550AE;\">where</span>\n    <span style=\"color: #0550AE;\">signatory</span> <span style=\"color: #0550AE;\">owner</span></code></pre></div></div>",
+      "css": ".ds-codeblock { border: 1px solid #e5e5e5; border-radius: 8px; overflow: hidden; font-family: 'JetBrains Mono', ui-monospace, monospace; } .ds-codeblock-header { display: flex; align-items: center; padding: 8px 16px; background: #fafafa; border-bottom: 1px solid #e5e5e5; } .ds-codeblock-filename { font-family: Inter, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.05em; color: #737373; text-transform: none; } .ds-codeblock-body { padding: 16px; background: #fafafa; overflow-x: auto; } .ds-codeblock-body pre { margin: 0; } .dark .ds-codeblock { border-color: #262626; } .dark .ds-codeblock-header { background: #171717; border-color: #262626; } .dark .ds-codeblock-body { background: #171717; } .dark .ds-codeblock-body pre { color: #a3a3a3; }"
+    },
+    {
+      "name": "Landing Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Section card on the landing page grid. Border-only container with icon, title, and link list.",
+      "html": "<div class=\"ds-card\"><div style=\"display: flex; align-items: center; gap: 8px; margin-bottom: 12px;\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#737373\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 19.5A2.5 2.5 0 0 1 6.5 17H20\"/><path d=\"M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z\"/></svg><span style=\"font-family: Inter, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #171717;\">Basics</span></div><p style=\"margin: 0 0 12px; font-family: Inter, sans-serif; font-size: 14px; color: #737373; line-height: 1.5;\">Core concepts and your first contract</p><ul style=\"list-style: none; margin: 0; padding: 0;\"><li><a href=\"#\" style=\"display: flex; align-items: center; gap: 6px; font-family: Inter, sans-serif; font-size: 14px; color: #525252; text-decoration: none;\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/><polyline points=\"12 5 19 12 12 19\"/></svg>Hello, World!</a></li></ul></div>",
+      "css": ".ds-card { padding: 20px; border: 1px solid #e5e5e5; border-radius: 8px; background: #ffffff; transition: border-color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-card:hover { border-color: #d4d4d4; } .dark .ds-card { background: #0a0a0b; border-color: #262626; } .dark .ds-card:hover { border-color: #404040; } .dark .ds-card span { color: #fafafa; } .dark .ds-card a { color: #a3a3a3; }"
+    },
+    {
+      "name": "Breadcrumb",
+      "kind": "custom",
+      "refersTo": "breadcrumb",
+      "description": "Page breadcrumb showing section hierarchy with chevron separators.",
+      "html": "<nav class=\"ds-breadcrumb\"><a href=\"#\">Templates</a><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><polyline points=\"9 18 15 12 9 6\"/></svg><span>Basic Template</span></nav>",
+      "css": ".ds-breadcrumb { display: flex; align-items: center; gap: 8px; font-family: Inter, sans-serif; font-size: 14px; color: #737373; margin-bottom: 16px; } .ds-breadcrumb a { color: #737373; text-decoration: none; } .ds-breadcrumb a:hover { color: #404040; } .ds-breadcrumb span { color: #171717; } .dark .ds-breadcrumb { color: #737373; } .dark .ds-breadcrumb a { color: #737373; } .dark .ds-breadcrumb a:hover { color: #a3a3a3; } .dark .ds-breadcrumb span { color: #fafafa; } .ds-breadcrumb svg { width: 12px; height: 12px; color: #737373; flex-shrink: 0; }"
+    },
+    {
+      "name": "Table of Contents Link",
+      "kind": "nav",
+      "refersTo": "toc",
+      "description": "Sticky sidebar listing page headings with active tracking via IntersectionObserver.",
+      "html": "<nav class=\"ds-toc\"><h3 class=\"ds-toc-heading\">On this page</h3><ul class=\"ds-toc-list\"><li><a href=\"#\" class=\"ds-toc-link ds-toc-active\">Template Structure</a></li><li><a href=\"#\" class=\"ds-toc-link\">Template Fields</a></li><li><a href=\"#\" class=\"ds-toc-link ds-toc-indent\">Observers</a></li></ul></nav>",
+      "css": ".ds-toc { width: 224px; } .ds-toc-heading { margin: 0 0 12px; font-family: Inter, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #737373; } .ds-toc-list { list-style: none; margin: 0; padding: 0; } .ds-toc-link { display: block; padding: 2px 0; font-family: Inter, sans-serif; font-size: 14px; color: #737373; text-decoration: none; transition: color 150ms; } .ds-toc-link:hover { color: #404040; } .ds-toc-active { font-weight: 500; color: #171717; } .ds-toc-indent { padding-left: 12px; } .dark .ds-toc-heading { color: #737373; } .dark .ds-toc-link { color: #a3a3a3; } .dark .ds-toc-link:hover { color: #d4d4d4; } .dark .ds-toc-active { color: #fafafa; }"
+    },
+    {
+      "name": "Header Bar",
+      "kind": "custom",
+      "refersTo": "header",
+      "description": "Sticky page header with mobile menu, search, and theme toggle.",
+      "html": "<header class=\"ds-header\"><div style=\"display: flex; align-items: center; justify-content: flex-end; gap: 8px;\"><button class=\"ds-btn-icon\" aria-label=\"Search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/></svg></button><button class=\"ds-btn-icon\" aria-label=\"Toggle theme\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\"/></svg></button></div></header>",
+      "css": ".ds-header { display: flex; align-items: center; justify-content: flex-end; height: 64px; padding: 0 16px; border-bottom: 1px solid #e5e5e5; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); } .dark .ds-header { border-color: #262626; background: rgba(10,10,11,0.95); }"
+    },
+    {
+      "name": "Search Modal",
+      "kind": "custom",
+      "refersTo": "search-modal",
+      "description": "Full-screen search overlay with input and results list. Triggered by Ctrl+K.",
+      "html": "<div style=\"position: fixed; inset: 0; z-index: 50; display: flex; justify-content: center; padding-top: 15vh; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);\"><div class=\"ds-search-modal\"><div class=\"ds-search-input-wrapper\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#a3a3a3\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink: 0;\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/></svg><input class=\"ds-search-input\" placeholder=\"Search documentation...\" value=\"template\" /><kbd class=\"ds-search-kbd\">ESC</kbd></div><div class=\"ds-search-results\"><a href=\"#\" class=\"ds-search-result\"><div class=\"ds-search-result-title\">Basic Template</div><div class=\"ds-search-result-excerpt\">Templates are the foundation of DAML...</div></a><a href=\"#\" class=\"ds-search-result\"><div class=\"ds-search-result-title\">Template Fields</div><div class=\"ds-search-result-excerpt\">Each template has <mark>field</mark>s that define its data...</div></a></div></div></div>",
+      "css": ".ds-search-modal { width: 100%; max-width: 512px; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 12px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); overflow: hidden; } .ds-search-input-wrapper { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 48px; border-bottom: 1px solid #e5e5e5; } .ds-search-input { flex: 1; border: none; background: none; font-family: Inter, sans-serif; font-size: 14px; outline: none; color: #171717; } .ds-search-input::placeholder { color: #a3a3a3; } .ds-search-kbd { flex-shrink: 0; padding: 2px 6px; border: 1px solid #e5e5e5; border-radius: 4px; font-family: Inter, sans-serif; font-size: 10px; color: #a3a3a3; display: none; } @media (min-width: 640px) { .ds-search-kbd { display: inline-block; } } .ds-search-results { max-height: 320px; overflow-y: auto; padding: 8px; } .ds-search-result { display: block; padding: 10px 12px; border-radius: 8px; text-decoration: none; } .ds-search-result:hover { background: #f5f5f5; } .ds-search-result-title { font-family: Inter, sans-serif; font-size: 14px; font-weight: 500; color: #171717; margin-bottom: 2px; } .ds-search-result-excerpt { font-family: Inter, sans-serif; font-size: 14px; color: #737373; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; } .ds-search-result-excerpt mark { background: none; color: #171717; font-weight: 500; } .dark .ds-search-modal { background: #171717; border-color: #262626; } .dark .ds-search-input-wrapper { border-color: #262626; } .dark .ds-search-input { color: #fafafa; } .dark .ds-search-input::placeholder { color: #737373; } .dark .ds-search-kbd { border-color: #404040; color: #737373; } .dark .ds-search-result:hover { background: #262626; } .dark .ds-search-result-title { color: #fafafa; } .dark .ds-search-result-excerpt { color: #737373; } .dark .ds-search-result-excerpt mark { color: #fafafa; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Lab Notebook",
+    "overview": "A clean, methodical reference for DAML developers. Every element earns its place, nothing distracts from the code. The system treats the browser window like a lab bench: lay out your tools, reference the material, get back to building. This design explicitly rejects blog-style layouts (hero images, narrative pull quotes, decorative illustration) and template-generated documentation chrome (Docusaurus/Nextra family resemblance). The interface is custom, deliberate, and invisible in use. Code blocks are the visual center of gravity on every page.",
+    "keyCharacteristics": [
+      "Monochrome with tonal paper stacking as the only depth mechanism. No shadows, no gradients, no glass.",
+      "High information density paired with generous vertical rhythm. The reader never scrolls past chrome.",
+      "Precision through consistency. The same heading hierarchy, spacing scale, and border treatment on every page.",
+      "The accent (solid black or white button) is a single utility tool, not a brand voice. Used on less than 5% of any page.",
+      "Developer-first: copy buttons on every code block, keyboard-navigable sidebar, sticky table of contents, Ctrl+K search."
+    ],
+    "rules": [
+      { "name": "The Paper Stack Rule", "body": "Depth is conveyed exclusively through paper color stacking: white on cold ash on hover ash. No shadows, no elevation. The single exception is the search modal, which uses shadow-2xl.", "section": "colors" },
+      { "name": "The One Fill Rule", "body": "Exactly one element on any page uses a filled accent background: the 'Get Started' button on the landing page. Inside doc pages, no element uses it. The accent's rarity is the point.", "section": "colors" },
+      { "name": "The Single Scale Rule", "body": "Four type sizes (0.75 / 1 / 1.0625 / 1.25 / 1.875 rem) with two weights (400, 600/700). That is the complete set. No intermediate sizes, no display cut, no italic.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. The paper stack provides depth; shadows never do. The single exception is the search modal's interaction layer.", "section": "elevation" }
+    ],
+    "dos": [
+      "Use the paper stack for depth. Layer white on cold ash on hover ash instead of adding shadows.",
+      "Keep code blocks as the most visually prominent element on every doc page.",
+      "Use the accent fill exactly once per page at most. Its rarity gives it meaning.",
+      "Respect the single scale rule. Four type sizes are enough.",
+      "Use transition-colors for state changes. Never animate layout properties."
+    ],
+    "donts": [
+      "Use shadows, gradients, glassmorphism, or any decorative effect.",
+      "Add hero images, pull quotes, narrative prose, or blog-style layouts.",
+      "Use em dashes. Use commas, colons, or periods instead.",
+      "Wrap content in cards nested inside other cards. Single-layer paper surfaces only.",
+      "Add sidebar stripe borders greater than 1px as accent.",
+      "Create the hero-metric template (big number, small label, supporting stats).",
+      "Reach for a modal as a first solution. Exhaust inline alternatives first.",
+      "Increase the type scale. No display cut, no new sizes.",
+      "Make the accent button anything but a neutral solid. No colors, no gradients."
+    ]
+  }
+}

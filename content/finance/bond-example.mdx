@@ -1,0 +1,87 @@
+---
+title: "Bond Contract"
+description: "A financial bond implementation in DAML"
+---
+
+# Bond Contract
+
+A bond is a fixed-income instrument representing a loan made by an investor to a borrower.
+
+## Bond Template
+
+```daml title="Bond.daml"
+daml 2.0
+module Bond
+
+template Bond
+  with
+    issuer: Party
+    owner: Party
+    principal: Decimal
+    coupon: Decimal
+    maturityDate: Date
+    currency: Text
+  where
+    signatory issuer, owner
+
+    choice PayCoupon: ()
+      with
+        payment: Decimal
+      controller issuer
+      do
+        debug s"Paying $payment coupon on bond"
+        return ()
+
+    choice Mature: ()
+      controller issuer
+      do
+        debug s"Bond matured. Paying $principal"
+        archive self
+
+    nonconsuming choice GetDetails: BondDetails
+      controller owner
+      do
+        return BondDetails with
+          issuer = issuer
+          principal = principal
+          coupon = coupon
+          maturityDate = maturityDate
+          currency = currency
+```
+
+## Supporting Types
+
+```daml title="BondTypes.daml"
+daml 2.0
+module BondTypes
+
+data BondDetails = BondDetails
+  with
+    issuer: Party
+    principal: Decimal
+    coupon: Decimal
+    maturityDate: Date
+    currency: Text
+```
+
+## Coupon Schedule
+
+Bonds typically pay periodic coupons. Here's a lifecycle:
+
+| Event        | Action                                    |
+|--------------|-------------------------------------------|
+| Issuance     | Create Bond contract                       |
+| Coupon Date  | Exercise `PayCoupon` with coupon amount    |
+| Maturity     | Exercise `Mature` to repay principal       |
+
+## Settlement
+
+```daml
+    choice Settle: ContractId Bond
+      with
+        settlementAmount: Decimal
+      controller owner
+      do
+        assert (settlementAmount == principal)
+        create this
+```

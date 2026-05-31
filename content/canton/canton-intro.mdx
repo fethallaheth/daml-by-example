@@ -1,0 +1,76 @@
+---
+title: "Canton Network Overview"
+description: "Introduction to the Canton Network"
+---
+
+# Canton Network Overview
+
+Canton is a privacy-preserving blockchain protocol that powers DAML smart contracts.
+
+## What is Canton?
+
+Canton provides:
+
+- **Privacy**: Only relevant parties see contract data
+- **Scalability**: Parallel execution across domains
+- **Composability**: Smart contracts interact across domains
+
+## Starting a Canton Network
+
+```bash
+canton daemon --config canton.conf
+```
+
+```conf title="canton.conf"
+canton {
+  participants {
+    participant1 {
+      storage.type = memory
+      ledger-api {
+        address = "localhost"
+        port = 5011
+      }
+    }
+    participant2 {
+      storage.type = memory
+      ledger-api {
+        address = "localhost"
+        port = 5021
+      }
+    }
+  }
+  domains {
+    mydomain {
+      storage.type = memory
+      public-api {
+        address = "localhost"
+        port = 5018
+      }
+    }
+  }
+}
+```
+
+## Connecting Participants
+
+```daml script
+test setup = scenario do
+  alice <- getParty "Alice"
+  bob <- getParty "Bob"
+  aliceCid <- submit alice do
+    createCmd Asset.Asset with
+      issuer = alice
+      owner = alice
+      amount = 1000.0
+  submit alice do
+    exerciseCmd aliceCid Asset.Transfer with
+      newOwner = bob
+```
+
+## Domain Topology
+
+Canton networks consist of:
+
+1. **Domains** — synchronize contract state among participants
+2. **Participants** — run DAML applications and store local data
+3. **Mediators** — optional, for privacy-enhanced communication
