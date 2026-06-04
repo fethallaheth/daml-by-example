@@ -2,7 +2,7 @@ import { getAllDocPaths } from "@/lib/content"
 import type { MetadataRoute } from "next"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://daml-by-example.vercel.app"
+  const baseUrl = "https://damlbyexample.xyz"
 
   const entries: MetadataRoute.Sitemap = [
     {

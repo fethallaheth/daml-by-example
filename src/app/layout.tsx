@@ -11,26 +11,33 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://daml-by-example.vercel.app"),
+  metadataBase: new URL("https://damlbyexample.xyz"),
   title: {
     default: "DAML By Example",
     template: "%s - DAML By Example",
   },
-  description: "Learn DAML smart contracts through practical examples. A hands-on guide to building on the Canton Network.",
+  description: "Basics, contracts, testing, patterns, advanced, finance. All in one place. Open source.",
   openGraph: {
     title: "DAML By Example",
-    description: "Learn DAML smart contracts through practical examples.",
+    description: "Basics, contracts, testing, patterns, advanced, finance. All in one place. Open source.",
     type: "website",
     siteName: "DAML By Example",
     url: "/",
     locale: "en_US",
-    images: ["/logo.svg"],
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "DAML By Example",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "DAML By Example",
-    description: "Learn DAML smart contracts through practical examples.",
-    images: ["/logo.svg"],
+    description: "Basics, contracts, testing, patterns, advanced, finance. All in one place. Open source.",
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,

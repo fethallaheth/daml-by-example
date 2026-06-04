@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://daml-by-example.vercel.app/sitemap.xml",
+    sitemap: "https://damlbyexample.xyz/sitemap.xml",
   }
 }
